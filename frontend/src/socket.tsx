@@ -1,11 +1,23 @@
 import React, { createContext, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { getTokenFromStorage } from './utils/auth'; // your helper
 
-export const socket = io(process.env.REACT_APP_API_URL || '/', {
+// Vite exposes runtime env vars through import.meta.env
+// use VITE_API_URL to point to your backend (set in Vercel/Render environments)
+const API = import.meta.env.VITE_API_URL || '/';
+
+// lightweight helper — prefer using localStorage token for handshake
+function getTokenFromStorage() {
+  try {
+    return localStorage.getItem('token');
+  } catch (e) {
+    return null;
+  }
+}
+
+export const socket = io(API, {
   autoConnect: false,
   // If you want to use auth token with socket handshake:
-  // auth: { token: getTokenFromStorage() }
+  auth: { token: getTokenFromStorage() }
 });
 
 // React context

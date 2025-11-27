@@ -60,6 +60,9 @@ app.use("/api/files", fileRoutes);
 app.use("/api/status", statusRoutes);
 app.use("/api/conversations", conversationsRoutes);
 
+// lightweight health check (useful for probes / verify deployment)
+app.get('/', (req, res) => res.json({ ok: true, service: 'banja-backend' }));
+
 // SOCKET.IO LOGIC
 io.on("connection", (socket) => {
   console.log("[socket] connected:", socket.id);
