@@ -57,8 +57,18 @@ router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
 router.get("/all", auth, async (req, res) => {
   try {
     const meId = req.user.id;
+    const searchQuery = req.query.search || "";
 
-    const users = await User.find({}, "username email avatar followers following").lean();
+    // Build search filter
+    let filter = {};
+    if (searchQuery) {
+      filter.$or = [
+        { username: { $regex: searchQuery, $options: "i" } },
+        { email: { $regex: searchQuery, $options: "i" } }
+      ];
+    }
+
+    const users = await User.find(filter, "username email avatar followers following").lean();
 
     const formatted = users
       .filter((u) => String(u._id) !== String(meId))

@@ -349,12 +349,33 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
               "
             >
               <div className="flex items-center gap-3">
-                <img
-                  src={avatarUrl(u)}
-                  alt={u.username}
-                  className="w-12 h-12 rounded-md object-cover cursor-pointer"
-                  onClick={() => openProfile(u._id)}
-                />
+                <div className="relative group">
+                  <Avatar
+                    src={avatarUrl(u)}
+                    className="w-12 h-12 rounded-md object-cover cursor-pointer transition-transform group-hover:scale-105"
+                    onClick={() => previewImage(u)}
+                    alt={u.username}
+                  />
+                  <div 
+                    className="absolute inset-0 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => previewImage(u)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                </div>
 
                 <div>
                   <div
