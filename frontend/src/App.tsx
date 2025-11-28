@@ -819,9 +819,10 @@ const myStatus =
               onClick={() => {
                 setView("all-users");
                 setInDM(false);
+                setActiveConversation(null);
               }}
             >
-              All Users
+              📋 All Users
             </button>
 
             <div className="mt-3 text-sm">
@@ -874,60 +875,33 @@ const myStatus =
 
           {/* ROOMS */}
           <div className="mt-6">
-            <h4 className="font-semibold mb-2">Rooms</h4>
-            <div className="flex flex-col gap-2">
-              {rooms.map((r) => (
-                <button
-                  key={r}
-                  className={clsx(
-                    "text-left p-2 rounded-md",
-                    r === room && !inDM && "bg-slate-800/50"
-                  )}
-                  onClick={() => {
-                    setRoom(r);
-                    setInDM(false);
-                    setView("chat");
-                  }}
-                >
-                  #{r}
-                </button>
-              ))}
-            </div>
+            <button
+              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 font-semibold"
+              onClick={() => {
+                setView("rooms");
+                setInDM(false);
+                setActiveConversation(null);
+              }}
+            >
+              🏠 Rooms
+            </button>
           </div>
 
-          {/* COLLAPSIBLE DMS */}
+          {/* DIRECT MESSAGES */}
           <div className="mt-6">
-            <div className="flex items-center justify-between">
-              <button
-                className="px-2 py-2 rounded-md hover:bg-slate-800/20 flex items-center gap-2"
-                onClick={() => setDmOpen((v) => !v)}
-              >
-                <span
-                  style={{
-                    transform: dmOpen ? "rotate(90deg)" : "rotate(0)",
-                    transition: "transform .15s"
-                  }}
-                >
-                  ▶
-                </span>
-                <span className="font-semibold">Direct Messages</span>
-              </button>
-
+            <button
+              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center justify-between font-semibold"
+              onClick={() => {
+                setView("direct-messages");
+                setInDM(false);
+                setActiveConversation(null);
+              }}
+            >
+              <span>💬 Direct Messages</span>
               <span className="text-xs opacity-60">
                 ({conversations.length})
               </span>
-            </div>
-
-            {dmOpen && (
-              <div className="mt-2">
-                <ConversationsList
-                  token={token}
-                  currentUserId={user?._id}
-                  onShowProfile={(u: any) => showProfile(u)}
-                  onOpenConversation={(c: any) => openConversation(c)}
-                />
-              </div>
-            )}
+            </button>
           </div>
 
           {/* SEARCH USERS */}
@@ -977,6 +951,44 @@ const myStatus =
             onOpenConversation={(c) => openConversation(c)}
             onShowProfile={showProfile}
           />
+        )}
+
+        {/* ROOMS PAGE */}
+        {view === "rooms" && (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">🏠 Rooms</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {rooms.map((r) => (
+                <button
+                  key={r}
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all text-left"
+                  onClick={() => {
+                    setRoom(r);
+                    setInDM(false);
+                    setView("chat");
+                  }}
+                >
+                  <div className="text-xl font-bold mb-2">#{r}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Click to join room
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* DIRECT MESSAGES PAGE */}
+        {view === "direct-messages" && (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">💬 Direct Messages</h2>
+            <ConversationsList
+              token={token}
+              currentUserId={user?._id}
+              onShowProfile={(u: any) => showProfile(u)}
+              onOpenConversation={(c: any) => openConversation(c)}
+            />
+          </div>
         )}
 
         {/* CHAT / DM PAGE */}
