@@ -135,6 +135,11 @@ body {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(100vh - 2rem);
+  overflow: hidden;
 }
 
 /* Main content full width when sidebar collapsed */

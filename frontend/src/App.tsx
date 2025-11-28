@@ -984,19 +984,19 @@ const myStatus =
         {/* ROOMS PAGE */}
         {view === "rooms" && (
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6">🏠 Rooms</h2>
+            <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-slate-100">🏠 Rooms</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {rooms.map((r) => (
                 <button
                   key={r}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all text-left"
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg hover:border-cyan-400 dark:hover:border-cyan-500 transition-all text-left group"
                   onClick={() => {
                     setRoom(r);
                     setInDM(false);
                     setView("chat");
                   }}
                 >
-                  <div className="text-xl font-bold mb-2">#{r}</div>
+                  <div className="text-xl font-bold mb-2 text-slate-900 dark:text-slate-100 group-hover:text-cyan-500 transition-colors">#{r}</div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
                     Click to join room
                   </div>
@@ -1021,8 +1021,8 @@ const myStatus =
 
         {/* CHAT / DM PAGE */}
         {view === "chat" && (
-          <>
-            <header className="flex items-center justify-between mb-4">
+          <div className="flex flex-col h-full">
+            <header className="flex items-center justify-between mb-4 flex-shrink-0">
               {inDM && activeConversation ? (
                 <div className="flex items-center gap-3">
                   {(() => {
@@ -1068,7 +1068,7 @@ const myStatus =
             </header>
 
             {/* MESSAGE LIST */}
-            <section className="flex-1 overflow-auto p-2">
+            <section className="flex-1 overflow-y-auto p-2 min-h-0">
               <div className="flex flex-col gap-4">
                 {renderMessages()}
                 <div ref={messagesEndRef} />
@@ -1077,7 +1077,7 @@ const myStatus =
 
             {/* MESSAGE COMPOSER */}
             <form
-              className="composer mt-4 flex flex-col gap-2"
+              className="composer mt-4 flex flex-col gap-2 flex-shrink-0"
               onSubmit={sendMessage}
             >
               {/* Image Preview Bar */}
@@ -1162,7 +1162,7 @@ const myStatus =
                 </div>
               </div>
             </form>
-          </>
+          </div>
         )}
       </main>
 
