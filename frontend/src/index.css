@@ -170,6 +170,14 @@ body {
   position: relative;
 }
 
+/* constrain images inside message bubbles */
+.message img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  border-radius: 0.5rem;
+}
+
 /* my messages */
 .msg-mine {
   background: var(--bubble-mine);
@@ -211,10 +219,17 @@ body {
 /* composer area */
 .composer {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 1rem;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.composer > div {
+  width: 100%;
+  max-width: 100%;
 }
 
 .composer input[type="file"] {
@@ -225,6 +240,20 @@ body {
 .composer .btn {
   white-space: nowrap;
   min-width: 70px;
+}
+
+/* Image preview bar in composer */
+.composer > div:first-of-type {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.composer .input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* reacted class */
@@ -349,18 +378,27 @@ body {
   .composer {
     flex-direction: column;
     gap: 0.75rem;
+    padding: 0 !important;
   }
   
   .composer > div {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   .composer .input {
-    width: 100%;
+    width: 100% !important;
+    box-sizing: border-box;
   }
   
   .composer .btn {
     width: 100%;
+  }
+  
+  /* Ensure input container doesn't overflow */
+  .composer .flex.items-center {
+    flex-wrap: nowrap !important;
+    gap: 0.5rem;
   }
   
   /* Image preview thumbnails responsive */

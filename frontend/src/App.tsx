@@ -16,6 +16,7 @@ import ConversationsList from "./components/ConversationsList";
 import AllUsers from "./pages/AllUsers";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
+import Avatar from "./components/Avatar";
 import logo from "./assets/logo.png";
 
 dayjs.extend(localizedFormat);
@@ -26,7 +27,7 @@ dayjs.updateLocale("en", { weekStart: 1 });
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const SAMPLE_AVATAR =
-  "/mnt/data/c1621a7f-41b8-42c2-8b53-ba7d75f5e2dc.png";
+  "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
 
 const THEME_KEY = "banja-theme";
 
@@ -606,9 +607,10 @@ const myStatus =
             }}
           >
             {showAvatar ? (
-              <img
+              <Avatar
                 src={makeAvatarUrl(m.sender?.avatar)}
                 className="avatar w-10 h-10 rounded-md object-cover"
+                alt={m.sender?.username || "User"}
               />
             ) : (
               <div style={{ width: 40 }} />
@@ -641,7 +643,8 @@ const myStatus =
               {m.fileUrl && (
                 <img
                   src={API + m.fileUrl}
-                  className="max-w-xs rounded-md mt-2"
+                  className="max-w-full w-auto h-auto rounded-md mt-2"
+                  style={{ maxHeight: "400px", objectFit: "contain" }}
                 />
               )}
 
@@ -782,9 +785,10 @@ const myStatus =
 
           {/* CURRENT USER */}
           <div className="flex items-center gap-3">
-            <img
+            <Avatar
               src={makeAvatarUrl(user?.avatar)}
               className="w-14 h-14 rounded-md object-cover"
+              alt={user?.username || "User"}
             />
             <div>
               <div className="font-bold">{user?.username}</div>
@@ -987,9 +991,10 @@ const myStatus =
                     );
                     return (
                       <>
-                        <img
+                        <Avatar
                           src={makeAvatarUrl(partner?.avatar)}
                           className="w-10 h-10 rounded-md object-cover"
+                          alt={partner?.username || "User"}
                         />
                         <div>
                           <div className="font-semibold">
@@ -1117,9 +1122,10 @@ const myStatus =
             ) : profileUser ? (
               <>
                 <div className="flex flex-col items-center gap-3">
-                  <img
+                  <Avatar
                     src={makeAvatarUrl(profileUser.avatar)}
                     className="w-20 h-20 rounded-md object-cover"
+                    alt={profileUser.username || "User"}
                   />
                   <div className="text-lg font-semibold">
                     {profileUser.username}
