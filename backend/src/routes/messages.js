@@ -142,16 +142,18 @@ router.delete("/:id/force", auth, async (req, res) => {
 
 /**
  * DELETE /api/messages/room/:roomId/clear
- * Clear all messages in a room/chat
+ * Clear all messages in a room/chat (hide for current user only)
  */
 router.delete("/room/:roomId/clear", auth, async (req, res) => {
   try {
+    const userId = req.user.id;
     const { roomId } = req.params;
-    await Message.deleteMany({ room: roomId });
     
-    // broadcast clear event to room
-    const io = req.app.get("io");
-    if (io) io.to(roomId).emit("chat_cleared", { room: roomId });
+    // Add current user to hiddenFor array for all messages in this room
+    await Message.updateMany(
+      { room: roomId },
+      { $addToSet: { hiddenFor: userId } }
+    );
     
     res.json({ success: true });
   } catch (err) {

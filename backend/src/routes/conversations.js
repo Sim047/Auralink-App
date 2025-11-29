@@ -123,12 +123,19 @@ router.delete('/:id', auth, async (req, res) => {
 
 /**
  * DELETE /api/conversations/:id/messages
- * clear messages only, keep conversation
+ * clear messages only, keep conversation (hide for current user only)
  */
 router.delete('/:id/messages', auth, async (req, res) => {
   try {
+    const userId = req.user.id;
     const convId = req.params.id;
-    await Message.deleteMany({ room: convId });
+    
+    // Add current user to hiddenFor array for all messages in this conversation
+    await Message.updateMany(
+      { room: convId },
+      { $addToSet: { hiddenFor: userId } }
+    );
+    
     res.json({ success: true });
   } catch (err) {
     console.error('[conversations/clearMessages]', err);
