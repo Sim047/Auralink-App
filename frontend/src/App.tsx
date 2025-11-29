@@ -674,7 +674,7 @@ const myStatus =
               )}
 
               <div className="flex gap-2 mt-2 items-center text-sm">
-                {["❤️", "🔥", "😂"].map((emoji) => (
+                {["❤️", "🔥", "😂", "😌"].map((emoji) => (
                   <button
                     key={emoji}
                     className={clsx(
