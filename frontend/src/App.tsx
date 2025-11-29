@@ -978,30 +978,10 @@ const myStatus =
         {/* LOGOUT - Always visible */}
         <div>
           <button 
-            className={`btn w-full mt-6 ${isFullPageView ? 'p-3' : ''}`} 
+            className="btn w-full mt-6" 
             onClick={logout}
-            title={isFullPageView ? "Log Out" : ""}
           >
-            {isFullPageView ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mx-auto"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            ) : (
-              'Log Out'
-            )}
+            Log Out
           </button>
           
           {/* Copyright - always visible on mobile, hidden when collapsed on desktop */}
@@ -1017,7 +997,7 @@ const myStatus =
       </aside>
 
       {/* ---------------- MAIN VIEW ---------------- */}
-      <main className={`main flex-1 flex flex-col transition-all duration-300 ${isFullPageView ? 'main-fullwidth' : ''}`}>
+      <main className="main flex-1 flex flex-col">
         {/* FOLLOWERS PAGE */}
         {view === "followers" && (
           <FollowersList
