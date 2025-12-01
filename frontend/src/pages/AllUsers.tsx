@@ -14,7 +14,7 @@ type User = {
   isFollowed?: boolean;
 };
 
-export default function AllUsers({ token, onOpenConversation, currentUserId }: any) {
+export default function AllUsers({ token, onOpenConversation, currentUserId, onShowProfile }: any) {
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,21 +23,10 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
 
   const [listMode, setListMode] = useState<"grid" | "list">("list");
 
-  // Profile Modal
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [profileUser, setProfileUser] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-
   // Image Preview Modal
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState("");
   const [previewUsername, setPreviewUsername] = useState("");
-
-  const [followList, setFollowList] = useState<any[]>([]);
-  const [followListMode, setFollowListMode] = useState<"followers" | "following">(
-    "followers"
-  );
-  const [followListLoading, setFollowListLoading] = useState(false);
 
   /* ----------------------------------------------------------
      LOAD USERS
@@ -149,21 +138,9 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
   /* ----------------------------------------------------------
      OPEN PROFILE
   ----------------------------------------------------------- */
-  async function openProfile(userId: string) {
-    setProfileOpen(true);
-    setProfileLoading(true);
-
-    try {
-      const res = await axios.get(API + "/api/users/" + userId, {
-        headers: { Authorization: "Bearer " + token },
-      });
-
-      setProfileUser(res.data);
-    } catch (err) {
-      console.error("openProfile err", err);
-      setProfileUser(null);
-    } finally {
-      setProfileLoading(false);
+  function openProfile(user: User) {
+    if (onShowProfile) {
+      onShowProfile(user);
     }
   }
 
@@ -174,32 +151,6 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
     setPreviewImageUrl(avatarUrl(user));
     setPreviewUsername(user.username || "User");
     setImagePreviewOpen(true);
-  }
-
-  /* ----------------------------------------------------------
-     FETCH FOLLOW LIST
-  ----------------------------------------------------------- */
-  async function fetchFollowList(userId: string, which: "followers" | "following") {
-    try {
-      const res = await axios.get(API + `/api/users/${userId}/${which}`, {
-        headers: { Authorization: "Bearer " + token },
-      });
-      return res.data || [];
-    } catch (err) {
-      console.error("fetchFollowList err", err);
-      return [];
-    }
-  }
-
-  async function viewFollowList(which: "followers" | "following") {
-    if (!profileUser) return;
-    setFollowListMode(which);
-    setFollowListLoading(true);
-
-    const items = await fetchFollowList(profileUser._id, which);
-
-    setFollowList(items);
-    setFollowListLoading(false);
   }
 
   /* ==========================================================
@@ -302,7 +253,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
               {/* Username */}
               <div
                 className="mt-1 font-semibold cursor-pointer truncate w-full text-slate-900 dark:text-slate-100 text-sm sm:text-base"
-                onClick={() => openProfile(u._id)}
+                onClick={() => openProfile(u)}
               >
                 {u.username}
               </div>
@@ -381,7 +332,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
                 <div className="flex-1 min-w-0">
                   <div
                     className="font-bold cursor-pointer text-slate-900 dark:text-slate-100 truncate"
-                    onClick={() => openProfile(u._id)}
+                    onClick={() => openProfile(u)}
                   >
                     {u.username}
                   </div>
@@ -454,98 +405,6 @@ export default function AllUsers({ token, onOpenConversation, currentUserId }: a
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-lg">
               <p className="text-white text-lg font-semibold">{previewUsername}</p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* -------------------------------------------------------------------
-         PROFILE MODAL (works with your new dark/light theme)
-      ------------------------------------------------------------------- */}
-      {profileOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setProfileOpen(false)}
-          />
-
-          <div className="relative bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl p-6 w-full max-w-md shadow-2xl">
-
-            {profileLoading ? (
-              <div className="text-slate-900 dark:text-slate-100">Loading profile…</div>
-            ) : !profileUser ? (
-              <div className="text-slate-900 dark:text-slate-100">Profile unavailable</div>
-            ) : (
-              <>
-                {/* Avatar and main info */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="relative group flex-shrink-0">
-                    <Avatar
-                      src={avatarUrl(profileUser)}
-                      className="w-20 h-20 rounded-lg object-cover cursor-pointer transition-transform group-hover:scale-105"
-                      onClick={() => previewImage(profileUser)}
-                      alt={profileUser.username}
-                    />
-                    <div 
-                      className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                      onClick={() => previewImage(profileUser)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">{profileUser.username}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">{profileUser.email}</div>
-
-                    <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                      <div>Followers: <b className="text-slate-900 dark:text-slate-100">{profileUser.followersCount}</b></div>
-                      <div>Following: <b className="text-slate-900 dark:text-slate-100">{profileUser.followingCount}</b></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex flex-col gap-2 mt-4">
-                  <button
-                    className="w-full px-4 py-2 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-medium hover:shadow-md transition-shadow"
-                    onClick={() => startConversation(profileUser)}
-                  >
-                    Message
-                  </button>
-                  
-                  {profileUser._id !== currentUserId && (
-                    <button
-                      className="w-full px-4 py-2 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-                      onClick={() =>
-                        followToggle(profileUser, !profileUser.isFollowed)
-                      }
-                    >
-                      {profileUser.isFollowed ? "Unfollow" : "Follow"}
-                    </button>
-                  )}
-
-                  <button
-                    className="w-full px-4 py-2 rounded-md border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       )}
