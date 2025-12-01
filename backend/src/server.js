@@ -113,6 +113,9 @@ app.use(
       if (isOriginAllowed(origin)) return callback(null, true);
       return callback(new Error('CORS origin not allowed'), false);
     },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json({ limit: "10mb" }));
