@@ -13,7 +13,7 @@ import Register from "./pages/Register";
 import StatusPicker from "./components/StatusPicker";
 import SearchUsers from "./components/SearchUsers";
 import ConversationsList from "./components/ConversationsList";
-import AllUsers from "./pages/AllUsers";
+import AllUsers from "./pages/AllUsersModern";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 import Discover from "./pages/Discover";
