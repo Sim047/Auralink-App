@@ -139,8 +139,12 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
      OPEN PROFILE
   ----------------------------------------------------------- */
   function openProfile(user: User) {
+    console.log("AllUsers openProfile called with:", user);
     if (onShowProfile) {
+      console.log("Calling onShowProfile");
       onShowProfile(user);
+    } else {
+      console.error("onShowProfile is not defined!");
     }
   }
 
