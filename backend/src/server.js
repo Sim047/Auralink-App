@@ -32,7 +32,7 @@ const server = http.createServer(app);
 // FRONTEND URL(s) for CORS & socket origin
 // Accepts comma-separated values, e.g. "https://app.vercel.app,https://my-preview.vercel.app"
 // or a single '*' to allow all origins (not recommended for production)
-const FRONTEND = process.env.FRONTEND_URL || '*';
+const FRONTEND = process.env.FRONTEND_URL || 'https://banja-sports.vercel.app,https://*.vercel.app';
 const allowedOrigins = String(FRONTEND)
   .split(',')
   .map((s) => s.trim())
