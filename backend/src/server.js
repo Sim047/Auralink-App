@@ -72,11 +72,18 @@ function originMatchesPattern(origin, pattern) {
 function isOriginAllowed(origin) {
   if (!origin) return true; // non-browser requests
   if (allowedOrigins.includes('*')) return true;
+  
+  // exact match check
   if (allowedOrigins.includes(origin)) return true;
 
-  // allow patterns
-  for (const p of allowedOrigins) {
-    if (p.includes('*') && originMatchesPattern(origin, p)) return true;
+  // allow all .vercel.app domains
+  if (origin.includes('.vercel.app')) return true;
+
+  // check patterns (with or without protocol)
+  for (const pattern of allowedOrigins) {
+    if (pattern.includes('*')) {
+      if (originMatchesPattern(origin, pattern)) return true;
+    }
   }
 
   return false;
