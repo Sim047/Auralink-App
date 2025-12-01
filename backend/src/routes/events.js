@@ -1,7 +1,7 @@
 // backend/src/routes/events.js
 import express from "express";
 import Event from "../models/Event.js";
-import { auth } from "../middleware/auth.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 

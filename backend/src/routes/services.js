@@ -1,7 +1,7 @@
 // backend/src/routes/services.js
 import express from "express";
 import Service from "../models/Service.js";
-import { auth } from "../middleware/auth.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 

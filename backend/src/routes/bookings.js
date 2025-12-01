@@ -3,7 +3,7 @@ import express from "express";
 import Booking from "../models/Booking.js";
 import Service from "../models/Service.js";
 import Event from "../models/Event.js";
-import { auth } from "../middleware/auth.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
