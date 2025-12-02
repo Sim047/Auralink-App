@@ -785,7 +785,7 @@ export default function Dashboard({ token, onNavigate }: any) {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Zap className="w-6 h-6" />
+                <Trophy className="w-6 h-6" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold mb-1">Ready to train?</h2>
@@ -800,7 +800,7 @@ export default function Dashboard({ token, onNavigate }: any) {
                 onClick={() => onNavigate && onNavigate('discover')}
                 className="px-6 py-3 bg-white text-teal-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-xl flex items-center gap-2"
               >
-                <Target className="w-5 h-5" />
+                <Star className="w-5 h-5" />
                 Explore Now
               </button>
               <button
