@@ -17,6 +17,7 @@ import AllUsers from "./pages/AllUsersModern";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 import Discover from "./pages/Discover";
+import Dashboard from "./pages/Dashboard";
 import Avatar from "./components/Avatar";
 import logo from "./assets/logo.png";
 
@@ -91,10 +92,10 @@ export default function App() {
 
   // dynamic pages
   const [view, setView] = useState<
-    "discover" | "chat" | "all-users" | "followers" | "following" | "rooms" | "direct-messages"
+    "dashboard" | "discover" | "chat" | "all-users" | "followers" | "following" | "rooms" | "direct-messages"
   >(() => {
-    // Start with discover on mobile, chat on desktop
-    return window.innerWidth <= 820 ? "discover" : "chat";
+    // Start with dashboard by default
+    return "dashboard";
   });
 
   // editing messages
@@ -123,6 +124,11 @@ export default function App() {
 
   // DM collapse
   const [dmOpen, setDmOpen] = useState<boolean>(true);
+  
+  // Sidebar collapse
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
+    () => localStorage.getItem('sidebar-collapsed') === 'true'
+  );
 
   // Missing states and helpers added
 const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
@@ -190,6 +196,12 @@ const myStatus =
     if (avatar.startsWith("/")) return API + avatar;
     return API + "/uploads/" + avatar;
   }
+  
+  // Save sidebar collapsed state
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+  
     // SOCKET SETUP -------------------------------------------------
   useEffect(() => {
     if (!token || !user) return;
@@ -817,13 +829,20 @@ const myStatus =
   
   // ---- MAIN LAYOUT ----
   return (
-    <div className={`layout container flex gap-4 p-4 min-h-screen relative ${view === 'chat' ? 'chat-active' : ''}`}>
+    <div className={`layout container flex gap-4 p-4 min-h-screen relative ${view === 'chat' ? 'chat-active' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* ---------------- SIDEBAR ---------------- */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div>
           {/* Header / Logo / Theme toggle */}
           <div className="flex flex-col items-center mb-6">
             <div className="flex items-center justify-between w-full px-2 mb-4">
+              <button
+                className="p-2 rounded-lg border border-slate-600 hover:bg-slate-700/40"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {sidebarCollapsed ? "☰" : "✕"}
+              </button>
               <button
                 className="p-2 rounded-lg border border-slate-600 hover:bg-slate-700/40"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -877,6 +896,17 @@ const myStatus =
           <div className="mt-4 p-2">
             <button
               className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2"
+              onClick={() => {
+                setView("dashboard");
+                setInDM(false);
+                setActiveConversation(null);
+              }}
+            >
+              🏠 Dashboard
+            </button>
+            
+            <button
+              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2 mt-2"
               onClick={() => {
                 setView("discover");
                 setInDM(false);
@@ -1010,6 +1040,14 @@ const myStatus =
 
       {/* ---------------- MAIN VIEW ---------------- */}
       <main className="main flex-1 flex flex-col">
+        {/* DASHBOARD PAGE */}
+        {view === "dashboard" && (
+          <Dashboard
+            token={token}
+            onNavigate={(newView: string) => setView(newView as any)}
+          />
+        )}
+        
         {/* DISCOVER PAGE */}
         {view === "discover" && (
           <Discover

@@ -7,6 +7,39 @@ import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
+// GET all bookings for current user (my-bookings endpoint)
+router.get("/my-bookings", auth, async (req, res) => {
+  try {
+    const { status, type, limit = 50 } = req.query;
+
+    const query = { client: req.user.id };
+
+    if (status) query.status = status;
+    if (type) query.bookingType = type;
+
+    const bookings = await Booking.find(query)
+      .populate("client", "username email avatar")
+      .populate("provider", "username email avatar")
+      .populate("service", "name category pricing")
+      .populate("event", "title sport startDate location")
+      .populate({
+        path: "coach",
+        select: "userId sports",
+        populate: {
+          path: "userId",
+          select: "username email avatar"
+        }
+      })
+      .sort({ createdAt: -1 })
+      .limit(Number(limit));
+
+    res.json({ bookings });
+  } catch (err) {
+    console.error("Get my bookings error:", err);
+    res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
+
 // GET all bookings for current user
 router.get("/", auth, async (req, res) => {
   try {

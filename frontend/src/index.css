@@ -108,6 +108,40 @@ body {
 .sidebar {
   width: 280px;
   min-width: 280px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+  width: 80px;
+  min-width: 80px;
+}
+
+/* Hide text in collapsed sidebar */
+.sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .text-sm,
+.sidebar.collapsed .opacity-70,
+.sidebar.collapsed .font-bold,
+.sidebar.collapsed .font-semibold,
+.sidebar.collapsed .text-xs,
+.sidebar.collapsed input[type="file"],
+.sidebar.collapsed .btn:not(.sidebar-toggle) {
+  opacity: 0;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Keep icons visible in collapsed mode */
+.sidebar.collapsed button {
+  justify-content: center;
+}
+
+/* Adjust layout when sidebar is collapsed */
+.layout.sidebar-collapsed .main {
+  width: calc(100% - 100px);
 }
 
 /* force sidebar as solid box in dark too */
