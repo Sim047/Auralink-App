@@ -91,6 +91,7 @@ router.get("/all", auth, async (req, res) => {
 
 /* ---------------------------------------------
    3) GET LOGGED-IN USER PROFILE
+   IMPORTANT: Must come BEFORE /:id route
 --------------------------------------------- */
 router.get("/me", auth, async (req, res) => {
   try {
