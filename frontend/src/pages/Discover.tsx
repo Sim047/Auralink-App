@@ -192,11 +192,22 @@ export default function Discover({ token, onViewProfile }: any) {
 
   // Filter logic
   const categories = ["All", ...new Set(ALL_SPORTS.map(s => s.category))];
-  const filteredSports = selectedCategory === "All" 
+  
+  // Filter sports by category
+  const categorizedSports = selectedCategory === "All" 
     ? ALL_SPORTS 
     : ALL_SPORTS.filter(s => s.category === selectedCategory);
+  
+  // Filter sports by search query
+  const searchFilteredSports = searchQuery.trim() 
+    ? categorizedSports.filter(s => 
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : categorizedSports;
+  
   const popularSports = ALL_SPORTS.filter(s => s.popular);
-  const displaySports = showAllSports ? filteredSports : popularSports;
+  const displaySports = showAllSports ? searchFilteredSports : popularSports;
 
   // Filter events by search
   const filteredEvents = events.filter(event =>
@@ -272,9 +283,9 @@ export default function Discover({ token, onViewProfile }: any) {
               onClick={() => setSelectedSport(sport.name)}
               className="cursor-pointer group"
             >
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur rounded-2xl p-6 border border-slate-600 hover:border-slate-400 transition-all duration-300 hover:scale-105 text-center">
-                <div className="text-4xl mb-3">{sport.icon}</div>
-                <h3 className="font-semibold text-slate-200 group-hover:text-white transition-colors">
+              <div className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur rounded-2xl p-4 border border-slate-600 hover:border-slate-400 transition-all duration-300 hover:scale-105 text-center min-h-[120px] flex flex-col items-center justify-center">
+                <div className="text-3xl mb-2">{sport.icon}</div>
+                <h3 className="font-semibold text-sm text-slate-200 group-hover:text-white transition-colors line-clamp-2 px-1">
                   {sport.name}
                 </h3>
               </div>
