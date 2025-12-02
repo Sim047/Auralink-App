@@ -13,14 +13,114 @@ import {
   ArrowRight,
   TrendingUp,
   BookOpen,
-  Star
+  Star,
+  Plus,
+  Trophy,
+  Globe,
+  Award,
+  Target,
+  Zap,
+  Sparkles
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import CreateEventModal from "../components/CreateEventModal";
 
 dayjs.extend(relativeTime);
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// Major Sports Events
+const MAJOR_SPORTS_EVENTS = [
+  {
+    id: 1,
+    name: "FIFA World Cup 2026",
+    sport: "Football",
+    icon: "⚽",
+    date: "June 2026",
+    location: "USA, Canada, Mexico",
+    type: "World Cup",
+    color: "from-blue-600 to-cyan-500",
+    participants: "32 teams",
+  },
+  {
+    id: 2,
+    name: "Summer Olympics 2028",
+    sport: "Multi-Sport",
+    icon: "🏅",
+    date: "July 2028",
+    location: "Los Angeles, USA",
+    type: "Olympics",
+    color: "from-yellow-500 to-orange-500",
+    participants: "206 countries",
+  },
+  {
+    id: 3,
+    name: "ICC Cricket World Cup 2027",
+    sport: "Cricket",
+    icon: "🏏",
+    date: "October 2027",
+    location: "India, Bangladesh, Sri Lanka",
+    type: "World Cup",
+    color: "from-green-600 to-emerald-500",
+    participants: "10 teams",
+  },
+  {
+    id: 4,
+    name: "Winter Olympics 2026",
+    sport: "Winter Sports",
+    icon: "⛷️",
+    date: "February 2026",
+    location: "Milan & Cortina, Italy",
+    type: "Olympics",
+    color: "from-indigo-600 to-purple-500",
+    participants: "92 countries",
+  },
+  {
+    id: 5,
+    name: "Rugby World Cup 2027",
+    sport: "Rugby",
+    icon: "🏉",
+    date: "September 2027",
+    location: "Australia",
+    type: "World Cup",
+    color: "from-red-600 to-pink-500",
+    participants: "20 teams",
+  },
+  {
+    id: 6,
+    name: "FIBA Basketball World Cup 2027",
+    sport: "Basketball",
+    icon: "🏀",
+    date: "August 2027",
+    location: "Qatar",
+    type: "World Cup",
+    color: "from-orange-600 to-red-500",
+    participants: "32 teams",
+  },
+  {
+    id: 7,
+    name: "World Athletics Championships 2027",
+    sport: "Athletics",
+    icon: "🏃",
+    date: "August 2027",
+    location: "Tokyo, Japan",
+    type: "Championship",
+    color: "from-teal-600 to-cyan-500",
+    participants: "200+ countries",
+  },
+  {
+    id: 8,
+    name: "Wimbledon Championships",
+    sport: "Tennis",
+    icon: "🎾",
+    date: "July (Annual)",
+    location: "London, UK",
+    type: "Grand Slam",
+    color: "from-green-500 to-lime-500",
+    participants: "128 players",
+  },
+];
 
 type Booking = {
   _id: string;
@@ -49,6 +149,7 @@ export default function Dashboard({ token, onNavigate }: any) {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -267,6 +368,66 @@ export default function Dashboard({ token, onNavigate }: any) {
           </div>
         )}
 
+        {/* Major Sports Events Section */}
+        <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-8 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Major Sports Events</h2>
+                <p className="text-white/80 text-sm">World Cup, Olympics & Championships</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {MAJOR_SPORTS_EVENTS.map((event) => (
+                <div
+                  key={event.id}
+                  className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105 cursor-pointer group"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${event.color} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
+                      {event.icon}
+                    </div>
+                    <span className="px-2 py-1 bg-white/20 rounded-lg text-xs font-medium">
+                      {event.type}
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-bold text-white mb-2 group-hover:text-yellow-300 transition-colors">
+                    {event.name}
+                  </h3>
+                  
+                  <div className="space-y-1 text-sm text-white/80">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{event.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{event.participants}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2 text-xs">
+                    <Trophy className="w-3 h-3" />
+                    <span className="font-medium">{event.sport}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* My Bookings */}
           <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
@@ -329,13 +490,14 @@ export default function Dashboard({ token, onNavigate }: any) {
           <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Upcoming Events
+                Community Events
               </h2>
               <button
-                onClick={() => onNavigate && onNavigate('discover')}
-                className="text-teal-500 hover:text-teal-600 text-sm font-medium flex items-center gap-1"
+                onClick={() => setCreateEventModalOpen(true)}
+                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2 shadow-lg shadow-teal-500/30"
               >
-                View All <ArrowRight className="w-4 h-4" />
+                <Plus className="w-4 h-4" />
+                Create Event
               </button>
             </div>
 
@@ -390,27 +552,61 @@ export default function Dashboard({ token, onNavigate }: any) {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 rounded-2xl p-8 text-white">
-          <h2 className="text-2xl font-bold mb-2">Ready to train?</h2>
-          <p className="text-white/90 mb-6">
-            Discover new coaches, join events, or book your next training session
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => onNavigate && onNavigate('discover')}
-              className="px-6 py-3 bg-white text-teal-600 font-medium rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg"
-            >
-              Explore Now
-            </button>
-            <button
-              onClick={() => onNavigate && onNavigate('all-users')}
-              className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-white/20 transition-all duration-300"
-            >
-              Find Coaches
-            </button>
+        <div className="relative overflow-hidden bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 rounded-3xl p-8 text-white">
+          <div className="absolute top-0 right-0 opacity-10">
+            <Sparkles className="w-64 h-64" />
+          </div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Zap className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold mb-1">Ready to train?</h2>
+                <p className="text-white/90">
+                  Discover new coaches, join events, or book your next training session
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button
+                onClick={() => onNavigate && onNavigate('discover')}
+                className="px-6 py-3 bg-white text-teal-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-xl flex items-center gap-2"
+              >
+                <Target className="w-5 h-5" />
+                Explore Now
+              </button>
+              <button
+                onClick={() => onNavigate && onNavigate('all-users')}
+                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 border border-white/30 flex items-center gap-2"
+              >
+                <Users className="w-5 h-5" />
+                Find Coaches
+              </button>
+              <button
+                onClick={() => setCreateEventModalOpen(true)}
+                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 border border-white/30 flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Create Event
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      <CreateEventModal
+        isOpen={createEventModalOpen}
+        onClose={() => setCreateEventModalOpen(false)}
+        token={token}
+        onSuccess={() => {
+          loadDashboardData();
+          setCreateEventModalOpen(false);
+        }}
+      />
     </div>
   );
 }
