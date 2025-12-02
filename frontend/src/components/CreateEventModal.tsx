@@ -1,5 +1,5 @@
 // frontend/src/components/CreateEventModal.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { X, Calendar, MapPin, Users, DollarSign, Clock, Trophy } from "lucide-react";
 
@@ -60,7 +60,7 @@ const SKILL_LEVELS = [
   { value: "advanced", label: "Advanced" },
 ];
 
-export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: any) {
+export default function CreateEventModal({ isOpen, onClose, token, onSuccess, editingEvent }: any) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -82,6 +82,52 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Load editing data when modal opens
+  useEffect(() => {
+    if (editingEvent && isOpen) {
+      setFormData({
+        title: editingEvent.title || "",
+        description: editingEvent.description || "",
+        sport: editingEvent.sport || "Football/Soccer",
+        eventType: editingEvent.eventType || "tournament",
+        startDate: editingEvent.startDate ? editingEvent.startDate.split('T')[0] : "",
+        endDate: editingEvent.endDate ? editingEvent.endDate.split('T')[0] : "",
+        time: editingEvent.time || "",
+        locationName: editingEvent.location?.name || "",
+        address: editingEvent.location?.address || "",
+        city: editingEvent.location?.city || "",
+        state: editingEvent.location?.state || "",
+        country: editingEvent.location?.country || "",
+        maxCapacity: editingEvent.capacity?.max || 20,
+        pricingType: editingEvent.pricing?.type || "free",
+        amount: editingEvent.pricing?.amount || 0,
+        currency: editingEvent.pricing?.currency || "USD",
+        skillLevel: editingEvent.skillLevel || "all",
+      });
+    } else if (!editingEvent && isOpen) {
+      // Reset for new event
+      setFormData({
+        title: "",
+        description: "",
+        sport: "Football/Soccer",
+        eventType: "tournament",
+        startDate: "",
+        endDate: "",
+        time: "",
+        locationName: "",
+        address: "",
+        city: "",
+        state: "",
+        country: "",
+        maxCapacity: 20,
+        pricingType: "free",
+        amount: 0,
+        currency: "USD",
+        skillLevel: "all",
+      });
+    }
+  }, [editingEvent, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +152,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: 
         },
         capacity: {
           max: Number(formData.maxCapacity),
-          current: 0,
+          current: editingEvent?.capacity?.current || 0,
         },
         pricing: {
           type: formData.pricingType,
@@ -117,9 +163,17 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: 
         status: "published",
       };
 
-      await axios.post(`${API}/api/events`, eventData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (editingEvent) {
+        // Update existing event
+        await axios.put(`${API}/api/events/${editingEvent._id}`, eventData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        // Create new event
+        await axios.post(`${API}/api/events`, eventData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       onSuccess && onSuccess();
       onClose();
@@ -159,8 +213,12 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: 
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">Create New Event</h2>
-            <p className="text-white/90 text-sm">Share your event with the community</p>
+            <h2 className="text-2xl font-bold text-white mb-1">
+              {editingEvent ? "Edit Event" : "Create New Event"}
+            </h2>
+            <p className="text-white/90 text-sm">
+              {editingEvent ? "Update your event details" : "Share your event with the community"}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -474,7 +532,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess }: 
               disabled={loading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-medium rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Creating..." : "Create Event"}
+              {loading 
+                ? (editingEvent ? "Updating..." : "Creating...") 
+                : (editingEvent ? "Update Event" : "Create Event")
+              }
             </button>
           </div>
         </form>

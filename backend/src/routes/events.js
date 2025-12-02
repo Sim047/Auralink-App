@@ -147,6 +147,44 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
+// DELETE event
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Check if user is organizer
+    if (event.organizer.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
+
+    res.json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("Delete event error:", err);
+    res.status(500).json({ error: "Failed to delete event" });
+  }
+});
+
+// GET my events (events created by logged-in user)
+router.get("/my/created", auth, async (req, res) => {
+  try {
+    const events = await Event.find({ organizer: req.user.id })
+      .populate("organizer", "username email avatar")
+      .populate("participants", "username avatar")
+      .sort({ createdAt: -1 });
+
+    res.json({ events });
+  } catch (err) {
+    console.error("Get my events error:", err);
+    res.status(500).json({ error: "Failed to fetch your events" });
+  }
+});
+
 // POST join event
 router.post("/:id/join", auth, async (req, res) => {
   try {

@@ -21,6 +21,7 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import CreateEventModal from "../components/CreateEventModal";
+import SportEvents from "./SportEvents";
 
 dayjs.extend(relativeTime);
 
@@ -184,6 +185,7 @@ export default function Dashboard({ token, onNavigate }: any) {
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [showAllSports, setShowAllSports] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedSport, setSelectedSport] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -297,6 +299,17 @@ export default function Dashboard({ token, onNavigate }: any) {
   // Sports to display
   const popularSports = ALL_SPORTS.filter(s => s.popular);
   const displaySports = showAllSports ? filteredSports : popularSports;
+
+  // If viewing a specific sport's events, show that component
+  if (selectedSport) {
+    return (
+      <SportEvents
+        sport={selectedSport}
+        token={token}
+        onBack={() => setSelectedSport(null)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -592,6 +605,7 @@ export default function Dashboard({ token, onNavigate }: any) {
             {displaySports.map((sport, index) => (
               <div
                 key={index}
+                onClick={() => setSelectedSport(sport.name)}
                 className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group relative"
               >
                 {sport.popular && !showAllSports && (

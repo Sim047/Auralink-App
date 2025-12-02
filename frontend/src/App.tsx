@@ -18,6 +18,7 @@ import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 import Discover from "./pages/Discover";
 import Dashboard from "./pages/Dashboard";
+import MyEvents from "./pages/MyEvents";
 import Avatar from "./components/Avatar";
 import logo from "./assets/logo.png";
 
@@ -917,6 +918,17 @@ const myStatus =
             </button>
             
             <button
+              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2 mt-2"
+              onClick={() => {
+                setView("my-events");
+                setInDM(false);
+                setActiveConversation(null);
+              }}
+            >
+              📅 My Events
+            </button>
+            
+            <button
               className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 mt-2"
               onClick={() => {
                 setView("all-users");
@@ -1046,6 +1058,11 @@ const myStatus =
             token={token}
             onNavigate={(newView: string) => setView(newView as any)}
           />
+        )}
+        
+        {/* MY EVENTS PAGE */}
+        {view === "my-events" && (
+          <MyEvents token={token} />
         )}
         
         {/* DISCOVER PAGE */}
