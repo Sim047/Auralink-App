@@ -148,7 +148,7 @@ export default function Discover({ token, onViewProfile }: any) {
   const [selectedSport, setSelectedSport] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [showAllSports, setShowAllSports] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [favoriteSports, setFavoriteSports] = useState<string[]>([]);
 
   useEffect(() => {
@@ -228,7 +228,7 @@ export default function Discover({ token, onViewProfile }: any) {
   const categories = ["All", ...new Set(ALL_SPORTS.map(s => s.category))];
   
   // Filter sports by category
-  const categorizedSports = selectedCategory === "All" 
+  const categorizedSports = !selectedCategory || selectedCategory === "All" 
     ? ALL_SPORTS 
     : ALL_SPORTS.filter(s => s.category === selectedCategory);
   
@@ -242,6 +242,9 @@ export default function Discover({ token, onViewProfile }: any) {
   
   const popularSports = ALL_SPORTS.filter(s => s.popular);
   const displaySports = showAllSports ? searchFilteredSports : popularSports;
+
+  // Show sports grid when: expanded, category selected (not empty/All), or searching
+  const shouldShowSportsGrid = showAllSports || (selectedCategory && selectedCategory !== "All") || searchQuery.trim();
 
   // Filter events by search
   const filteredEvents = events.filter(event =>
@@ -291,12 +294,17 @@ export default function Discover({ token, onViewProfile }: any) {
         </div>
 
         {/* Category Filter */}
-        {showAllSports && (
+        {shouldShowSportsGrid && (
           <div className="flex gap-3 mb-6 flex-wrap">
             {categories.map(cat => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  if (cat !== "All" && !showAllSports) {
+                    setShowAllSports(true);
+                  }
+                }}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   selectedCategory === cat
                     ? 'bg-slate-600 border-2 border-slate-400 text-white'
@@ -310,7 +318,7 @@ export default function Discover({ token, onViewProfile }: any) {
         )}
 
         {/* Sports Grid - only show when expanded, category selected, or searching */}
-        {(showAllSports || searchQuery.trim()) && (
+        {shouldShowSportsGrid && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {displaySports.map((sport) => (
               <div
