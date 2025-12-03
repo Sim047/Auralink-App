@@ -38,19 +38,25 @@ export default function Sidebar({ token, onNavigate }: SidebarProps) {
       setLoading(true);
       setError(false);
       const res = await axios.get(`${API}/api/users/me`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        validateStatus: (status) => status < 500, // Don't throw on 4xx errors
       });
+      
+      if (res.status === 404) {
+        // Backend endpoint not available yet - use defaults
+        setFollowers(0);
+        setFollowing(0);
+        setError(true);
+        return;
+      }
       
       const user = res.data;
       setFollowers(Array.isArray(user.followers) ? user.followers.length : 0);
       setFollowing(Array.isArray(user.following) ? user.following.length : 0);
     } catch (err: any) {
-      // Silently handle error - backend may not be deployed yet
-      if (err?.response?.status !== 404) {
-        console.error("Sidebar stats error:", err);
-      }
+      // Only log unexpected errors (5xx server errors)
+      console.error("Sidebar stats error:", err);
       setError(true);
-      // Set defaults on error
       setFollowers(0);
       setFollowing(0);
     } finally {
