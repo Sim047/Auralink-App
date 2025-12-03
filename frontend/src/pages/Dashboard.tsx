@@ -184,7 +184,7 @@ export default function Dashboard({ token, onNavigate }: any) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [showAllSports, setShowAllSports] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
 
   useEffect(() => {
@@ -292,13 +292,16 @@ export default function Dashboard({ token, onNavigate }: any) {
   const categories = ["All", ...new Set(ALL_SPORTS.map(s => s.category))];
   
   // Filter sports by category
-  const filteredSports = selectedCategory === "All" 
+  const filteredSports = !selectedCategory || selectedCategory === "All" 
     ? ALL_SPORTS 
     : ALL_SPORTS.filter(s => s.category === selectedCategory);
   
   // Sports to display
   const popularSports = ALL_SPORTS.filter(s => s.popular);
   const displaySports = showAllSports ? filteredSports : popularSports;
+
+  // Show sports grid when: expanded or category selected (not empty/All)
+  const shouldShowSportsGrid = showAllSports || (selectedCategory && selectedCategory !== "All");
 
   // If viewing a specific sport's events, show that component
   if (selectedSport) {
@@ -582,12 +585,17 @@ export default function Dashboard({ token, onNavigate }: any) {
           </div>
 
           {/* Category Filter */}
-          {showAllSports && (
+          {shouldShowSportsGrid && (
             <div className="mb-6 flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    if (category !== "All" && !showAllSports) {
+                      setShowAllSports(true);
+                    }
+                  }}
                   className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
                     selectedCategory === category
                       ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30"
@@ -601,6 +609,7 @@ export default function Dashboard({ token, onNavigate }: any) {
           )}
 
           {/* Sports Grid */}
+          {shouldShowSportsGrid && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {displaySports.map((sport, index) => (
               <div
@@ -628,6 +637,7 @@ export default function Dashboard({ token, onNavigate }: any) {
               </div>
             ))}
           </div>
+          )}
 
           {/* Popular Sports Notification Banner */}
           {!showAllSports && (
