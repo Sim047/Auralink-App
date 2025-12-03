@@ -34,14 +34,6 @@ export default function Sidebar({ token, onNavigate }: SidebarProps) {
   async function loadUserStats() {
     if (!token) return;
     
-    // TODO: Re-enable when backend /api/users/me endpoint is deployed
-    // Temporarily disabled to prevent 404 errors in production
-    setFollowers(0);
-    setFollowing(0);
-    setLoading(false);
-    return;
-    
-    /* Commented out until backend is deployed
     try {
       setLoading(true);
       setError(false);
@@ -70,7 +62,6 @@ export default function Sidebar({ token, onNavigate }: SidebarProps) {
     } finally {
       setLoading(false);
     }
-    */
   }
 
   const stats = [
