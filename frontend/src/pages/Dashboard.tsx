@@ -15,7 +15,8 @@ import {
   Plus,
   Sparkles,
   Trophy,
-  Star
+  Star,
+  Award
 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -182,6 +183,8 @@ export default function Dashboard({ token, onNavigate }: any) {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
+  const [showAllSports, setShowAllSports] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
 
   useEffect(() => {
@@ -284,6 +287,18 @@ export default function Dashboard({ token, onNavigate }: any) {
     upcomingEvents: upcomingEvents.length,
     notifications: notifications.length,
   };
+
+  // Get unique categories
+  const categories = ["All", ...new Set(ALL_SPORTS.map(s => s.category))];
+  
+  // Filter sports by category
+  const filteredSports = selectedCategory === "All" 
+    ? ALL_SPORTS 
+    : ALL_SPORTS.filter(s => s.category === selectedCategory);
+  
+  // Sports to display
+  const popularSports = ALL_SPORTS.filter(s => s.popular);
+  const displaySports = showAllSports ? filteredSports : popularSports;
 
   // If viewing a specific sport's events, show that component
   if (selectedSport) {
@@ -528,6 +543,129 @@ export default function Dashboard({ token, onNavigate }: any) {
             </div>
           </div>
         )}
+
+        {/* All Sports Categories Section */}
+        <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-8 border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl shadow-lg shadow-teal-500/30">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Browse All Sports
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  {showAllSports 
+                    ? `Showing ${displaySports.length} sports` 
+                    : `Showing ${popularSports.length} popular sports`}
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowAllSports(!showAllSports)}
+              className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-medium rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 flex items-center gap-2"
+            >
+              {showAllSports ? (
+                <>
+                  <Star className="w-4 h-4" />
+                  Show Popular Only
+                </>
+              ) : (
+                <>
+                  <Award className="w-4 h-4" />
+                  View All {ALL_SPORTS.length} Sports
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Category Filter */}
+          {showAllSports && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                    selectedCategory === category
+                      ? "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sports Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {displaySports.map((sport, index) => (
+              <div
+                key={index}
+                onClick={() => setSelectedSport(sport.name)}
+                className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group relative"
+              >
+                {sport.popular && !showAllSports && (
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Star className="w-3 h-3 text-white fill-white" />
+                  </div>
+                )}
+                
+                <div className="text-center">
+                  <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
+                    {sport.icon}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1 group-hover:text-teal-500 transition-colors">
+                    {sport.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {sport.category}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Popular Sports Notification Banner */}
+          {!showAllSports && (
+            <div className="mt-6 p-6 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-2xl border-2 border-teal-200 dark:border-teal-800">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-teal-500 rounded-xl shadow-lg shadow-teal-500/30 shrink-0">
+                  <Bell className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-teal-500" />
+                    Popular Sports Highlighted
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
+                    We're showing the {popularSports.length} most popular sports. Want to explore more options?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                      {ALL_SPORTS.filter(s => s.category === "Team Sports").length} Team Sports
+                    </span>
+                    <span className="px-3 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                      {ALL_SPORTS.filter(s => s.category === "Combat Sports").length} Combat Sports
+                    </span>
+                    <span className="px-3 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                      {ALL_SPORTS.filter(s => s.category === "Winter Sports").length} Winter Sports
+                    </span>
+                    <span className="px-3 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                      {ALL_SPORTS.filter(s => s.category === "Mind Sports").length} Mind Sports
+                    </span>
+                    <span className="px-3 py-1 bg-white dark:bg-gray-800 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                      +{categories.length - 5} more categories
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* My Bookings */}
