@@ -487,12 +487,15 @@ export default function Sidebar({
       <div
         className={`
           fixed lg:sticky top-0 left-0 h-screen
-          bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
-          border-r border-slate-700 shadow-2xl
+          border-r shadow-2xl
           transition-all duration-300 z-40
           ${isCollapsed ? 'w-20' : 'w-80'}
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
+        style={{ 
+          background: 'var(--sidebar)',
+          borderColor: 'var(--border)'
+        }}
       >
         <div className="relative h-full">
           <CollapseToggle />

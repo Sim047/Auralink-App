@@ -19,9 +19,9 @@
 
 /* Light Theme */
 :root.light {
-  --bg: #f0f4f8;
+  --bg: linear-gradient(to bottom right, #f8fafc, #f1f5f9, #e2e8f0);
   --bg-secondary: #ffffff;
-  --sidebar: #ffffff;
+  --sidebar: linear-gradient(to bottom, #ffffff, #f8fafc, #f1f5f9);
   --text: #1e293b;
   --text-secondary: #475569;
   --muted: #64748b;
@@ -45,16 +45,16 @@
 
 /* Dark Theme — fully solid boxes (no see-through) */
 :root.dark {
-  --bg: #0a0e1a;
+  --bg: linear-gradient(to bottom right, #0a0e1a, #0f172a, #1e293b);
   --bg-secondary: #111827;
-  --sidebar: #0f172a;
+  --sidebar: linear-gradient(to bottom, #0f172a, #1e293b, #0f172a);
   --text: #f1f5f9;
   --text-secondary: #cbd5e1;
   --muted: #94a3b8;
 
   --card: #1e293b;
   --card-solid: #1e293b;
-  --border: rgba(148, 163, 184, 0.1);
+  --border: rgba(148, 163, 184, 0.15);
 
   --bubble-mine: rgba(34,211,238,0.15);
   --bubble-other: rgba(255,255,255,0.05);

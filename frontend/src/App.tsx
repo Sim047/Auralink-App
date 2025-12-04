@@ -815,7 +815,7 @@ function onMyStatusUpdated(newStatus: any) {
   
   // ---- MAIN LAYOUT ----
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#071029] dark:via-[#0a1435] dark:to-[#071029]">
+    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
       {/* Unified Sidebar */}
       {token && (
         <Sidebar
@@ -844,7 +844,7 @@ function onMyStatusUpdated(newStatus: any) {
       )}
 
       {/* ---------------- MAIN VIEW ---------------- */}
-      <main className="flex-1 flex flex-col p-4 lg:p-6 overflow-auto">
+      <main className="flex-1 flex flex-col p-4 lg:p-6 overflow-auto" style={{ color: 'var(--text)' }}>
         {/* DASHBOARD PAGE */}
         {view === "dashboard" && (
           <Dashboard

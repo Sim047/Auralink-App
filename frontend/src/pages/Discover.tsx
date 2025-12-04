@@ -220,7 +220,7 @@ export default function Discover({ token, onViewProfile }: any) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
+    <div className="min-h-screen p-6" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">
