@@ -87,7 +87,15 @@ export default function App() {
   const [authPage, setAuthPage] = useState<"login" | "register">("login");
 
   // ROOMS + DM --------------------------------
-  const [room, setRoom] = useState<string>("general");
+  const [room, setRoom] = useState<string>(() => {
+    const saved = localStorage.getItem("banja-current-room");
+    return saved || "general";
+  });
+  
+  // Persist room changes
+  useEffect(() => {
+    localStorage.setItem("banja-current-room", room);
+  }, [room]);
   const [rooms] = useState<string[]>(["general", "random", "dev"]);
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState<string>("");
@@ -106,16 +114,41 @@ export default function App() {
 
   // DM & conversations
   const [conversations, setConversations] = useState<any[]>([]);
-  const [inDM, setInDM] = useState(false);
-  const [activeConversation, setActiveConversation] = useState<any | null>(null);
+  const [inDM, setInDM] = useState(() => {
+    const saved = localStorage.getItem("banja-in-dm");
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [activeConversation, setActiveConversation] = useState<any | null>(() => {
+    const saved = localStorage.getItem("banja-active-conversation");
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  // Persist DM state
+  useEffect(() => {
+    localStorage.setItem("banja-in-dm", JSON.stringify(inDM));
+  }, [inDM]);
+  
+  useEffect(() => {
+    if (activeConversation) {
+      localStorage.setItem("banja-active-conversation", JSON.stringify(activeConversation));
+    } else {
+      localStorage.removeItem("banja-active-conversation");
+    }
+  }, [activeConversation]);
 
   // dynamic pages
   const [view, setView] = useState<
     "dashboard" | "discover" | "chat" | "all-users" | "followers" | "following" | "rooms" | "direct-messages"
   >(() => {
-    // Start with dashboard by default
-    return "dashboard";
+    // Restore previous view from localStorage
+    const saved = localStorage.getItem("banja-current-view");
+    return (saved as any) || "dashboard";
   });
+  
+  // Persist view changes to localStorage
+  useEffect(() => {
+    localStorage.setItem("banja-current-view", view);
+  }, [view]);
 
   // editing messages
   const [editingMessageId, setEditingMessageId] =
@@ -227,7 +260,25 @@ function onMyStatusUpdated(newStatus: any) {
     socket.emit("join_room", room);
 
     socket.on("receive_message", (msg: any) => {
-      setMessages((m) => [...m, msg]);
+      setMessages((m) => {
+        // Remove any pending/optimistic messages from the same user with similar timestamp
+        const filtered = m.filter((existing) => {
+          if (!existing.isPending) return true;
+          // Remove pending message if we received the real one
+          if (existing.sender?._id === msg.sender?._id && 
+              existing.text === msg.text &&
+              Math.abs(new Date(existing.createdAt).getTime() - new Date(msg.createdAt).getTime()) < 5000) {
+            return false;
+          }
+          return true;
+        });
+        
+        // Check if message already exists (prevent duplicates)
+        const exists = filtered.some((existing) => existing._id === msg._id);
+        if (exists) return filtered;
+        
+        return [...filtered, msg];
+      });
       scrollToBottom();
       
       // Mark as delivered if not sender
@@ -403,6 +454,19 @@ function onMyStatusUpdated(newStatus: any) {
     // Send message with all uploaded images
     if (fileUrls.length > 0) {
       for (const fileUrl of fileUrls) {
+        const optimisticMessage = {
+          _id: `temp-${Date.now()}-${Math.random()}`,
+          sender: user,
+          text: fileUrls.indexOf(fileUrl) === 0 ? text : "",
+          room: targetRoom,
+          fileUrl,
+          createdAt: new Date().toISOString(),
+          isPending: true
+        };
+        
+        // Add message immediately to UI (optimistic update)
+        setMessages((m) => [...m, optimisticMessage]);
+        
         socket.emit("send_message", {
           room: targetRoom,
           message: {
@@ -415,6 +479,19 @@ function onMyStatusUpdated(newStatus: any) {
         });
       }
     } else if (text) {
+      const optimisticMessage = {
+        _id: `temp-${Date.now()}-${Math.random()}`,
+        sender: user,
+        text,
+        room: targetRoom,
+        fileUrl: "",
+        createdAt: new Date().toISOString(),
+        isPending: true
+      };
+      
+      // Add message immediately to UI (optimistic update)
+      setMessages((m) => [...m, optimisticMessage]);
+      
       socket.emit("send_message", {
         room: targetRoom,
         message: {
