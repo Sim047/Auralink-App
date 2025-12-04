@@ -565,11 +565,21 @@ function onMyStatusUpdated(newStatus: any) {
     setText("");
     setSelectedImages([]);
     setFile(null);
+    
+    // Reset textarea height
+    setTimeout(() => {
+      const textarea = document.querySelector('textarea');
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = '48px';
+      }
+    }, 0);
+    
     scrollToBottom();
   }
 
   // TYPING -------------------------------------------------------
-  function onComposerChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function onComposerChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setText(e.target.value);
 
     socket.emit("typing", {
@@ -581,9 +591,14 @@ function onMyStatusUpdated(newStatus: any) {
   }
 
   // Handle Enter key press
-  function handleKeyPress(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleKeyPress(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter") {
-      if (enterToSend && !e.shiftKey && !e.ctrlKey) {
+      // Shift+Enter always creates a new line
+      if (e.shiftKey) {
+        return; // Allow default behavior (new line)
+      }
+      
+      if (enterToSend && !e.ctrlKey) {
         // Enter alone sends if setting is enabled
         e.preventDefault();
         sendMessage();
@@ -1364,14 +1379,21 @@ function onMyStatusUpdated(newStatus: any) {
                 </div>
               )}
 
-              <div className="relative flex items-center">
-                <input
-                  className="input w-full p-3 pr-24 rounded-full bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 border border-slate-300 dark:border-slate-600"
+              <div className="relative flex items-end">
+                <textarea
+                  className="input w-full p-3 pr-28 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 border border-slate-300 dark:border-slate-600 resize-none overflow-hidden min-h-[48px] max-h-[200px]"
                   value={text}
                   onChange={onComposerChange}
                   onKeyDown={handleKeyPress}
                   placeholder={inDM ? (enterToSend ? "Message... (Enter to send)" : "Message... (Ctrl+Enter to send)") : (enterToSend ? "Say something... (Enter to send)" : "Say something... (Ctrl+Enter to send)")}
-                />                <div className="absolute right-2 flex items-center gap-1">
+                  rows={1}
+                  onInput={(e: any) => {
+                    // Auto-resize textarea as user types
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                  }}
+                />
+                <div className="absolute right-2 bottom-2 flex items-center gap-1">
                   {/* Image Button with Icon */}
                   <label className="cursor-pointer p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                     <svg
