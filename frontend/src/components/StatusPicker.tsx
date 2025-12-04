@@ -66,7 +66,7 @@ export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
   return (
     <div className="status-picker">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold text-sm text-slate-300">Status</h4>
+        <h4 className="font-semibold text-sm text-slate-300">About</h4>
         <button 
           className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline transition-colors font-medium" 
           onClick={() => setOpen(!open)}
