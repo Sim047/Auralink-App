@@ -243,11 +243,12 @@ export default function Sidebar({
             </div>
           </div>
 
-          <StatusPicker
-            token={token}
-            currentStatus={myStatus}
-            onUpdated={onStatusUpdated}
-          />
+          {myStatus && (
+            <div className="text-xs flex gap-1 items-center mb-3" style={{ color: 'var(--text-secondary)' }}>
+              <span>{myStatus.emoji}</span>
+              <span className="opacity-80 truncate">{myStatus.mood}</span>
+            </div>
+          )}
 
           {/* Avatar Upload - moved here from below */}
           <div className="mt-4 pt-4 border-t border-slate-600">
