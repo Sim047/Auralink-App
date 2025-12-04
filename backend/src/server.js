@@ -257,8 +257,8 @@ io.on("connection", (socket) => {
   });
 
   // TYPING
-  socket.on("typing", ({ room, userId, typing }) => {
-    socket.to(room).emit("typing", { userId, typing });
+  socket.on("typing", ({ room, userId, user, typing }) => {
+    socket.to(room).emit("typing", { userId, user, typing });
   });
 
   // MESSAGE DELIVERED
