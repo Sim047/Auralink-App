@@ -77,6 +77,35 @@
 }
 
 /* =========================================================
+   THEME-AWARE TEXT COLOR UTILITIES
+   ========================================================= */
+.text-theme {
+  color: var(--text) !important;
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-theme-muted {
+  color: var(--muted) !important;
+}
+
+/* Headings - always high contrast */
+.text-heading {
+  color: var(--text) !important;
+}
+
+/* Cards and panels */
+.card-text {
+  color: var(--text) !important;
+}
+
+.card-text-muted {
+  color: var(--muted) !important;
+}
+
+/* =========================================================
    BASE RESET
    ========================================================= */
 html, body, #root {

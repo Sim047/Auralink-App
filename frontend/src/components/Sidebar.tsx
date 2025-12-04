@@ -151,9 +151,9 @@ export default function Sidebar({
       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-700/50 transition-all group"
       title={isCollapsed ? label : ''}
     >
-      <Icon className="w-5 h-5 text-slate-300 group-hover:text-cyan-400 transition-colors flex-shrink-0" />
+      <Icon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} />
       {!isCollapsed && (
-        <span className="flex-1 text-left text-sm font-medium text-slate-200 group-hover:text-white">
+        <span className="flex-1 text-left text-sm font-medium" style={{ color: 'var(--text)' }}>
           {label}
         </span>
       )}
@@ -276,13 +276,13 @@ export default function Sidebar({
               alt={user?.username || "User"}
             />
             <div className="flex-1 min-w-0">
-              <div className="font-bold truncate">{user?.username}</div>
-              <div className="text-xs opacity-70 truncate">{user?.role?.toUpperCase() || "USER"}</div>
+              <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
+              <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.role?.toUpperCase() || "USER"}</div>
             </div>
           </div>
 
           {myStatus && (
-            <div className="text-xs flex gap-1 items-center mb-3">
+            <div className="text-xs flex gap-1 items-center mb-3" style={{ color: 'var(--text-secondary)' }}>
               <span>{myStatus.emoji}</span>
               <span className="opacity-80 truncate">{myStatus.mood}</span>
             </div>
@@ -397,7 +397,7 @@ export default function Sidebar({
       {/* Quick Stats */}
       <div className="flex-1 p-4 border-t border-slate-700">
         {!isCollapsed && (
-          <h3 className="text-sm font-bold text-slate-300 mb-3">Quick Stats</h3>
+          <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Quick Stats</h3>
         )}
         
         <div className="space-y-2">

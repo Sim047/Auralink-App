@@ -223,10 +223,10 @@ export default function Discover({ token, onViewProfile }: any) {
     <div className="min-h-screen p-6" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text)' }}>
           Discover Sports Events
         </h1>
-        <p className="text-slate-300 mb-6">
+        <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
           Browse events across all sports or filter by your favorite category
         </p>
         
@@ -238,7 +238,12 @@ export default function Discover({ token, onViewProfile }: any) {
             placeholder="Search events by title, sport, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-transparent flex-1 outline-none text-white placeholder-slate-400"
+            className="flex-1 outline-none"
+            style={{ 
+              background: 'transparent',
+              color: 'var(--text)',
+              caretColor: 'var(--text)'
+            }}
           />
         </div>
       </div>
