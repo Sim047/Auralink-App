@@ -384,15 +384,22 @@ router.get("/my-join-requests", auth, async (req, res) => {
 // GET pending join requests for my events (as organizer)
 router.get("/my-events-requests", auth, async (req, res) => {
   try {
+    console.log("Fetching event requests for organizer:", req.user.id);
+    
+    // Find all events organized by this user that have any join requests
     const events = await Event.find({
       organizer: req.user.id,
-      "joinRequests.status": "pending",
+      joinRequests: { $exists: true, $ne: [] }
     })
       .populate("joinRequests.user", "username avatar email");
 
+    console.log("Found events with join requests:", events.length);
+
     const pendingRequests = [];
     events.forEach(event => {
+      console.log(`Event "${event.title}" has ${event.joinRequests.length} join requests`);
       event.joinRequests.forEach(request => {
+        console.log(`  Request from ${request.user?.username || 'unknown'} - status: ${request.status}`);
         if (request.status === "pending") {
           pendingRequests.push({
             requestId: request._id,
@@ -410,6 +417,7 @@ router.get("/my-events-requests", auth, async (req, res) => {
       });
     });
 
+    console.log("Returning pending requests:", pendingRequests.length);
     res.json(pendingRequests);
   } catch (err) {
     console.error("Get events requests error:", err);
