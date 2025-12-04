@@ -118,15 +118,10 @@ export default function App() {
 
   // DM collapse
   const [dmOpen, setDmOpen] = useState<boolean>(true);
-  
-  // Sidebar collapse
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
-    () => localStorage.getItem('sidebar-collapsed') === 'true'
-  );
 
   // Missing states and helpers added
-const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
-const [unreadIndex, setUnreadIndex] = useState<number>(-1);
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  const [unreadIndex, setUnreadIndex] = useState<number>(-1);
 
 function shouldShowAvatar(index: number) {
   if (index === 0) return true;
@@ -181,7 +176,7 @@ function onMyStatusUpdated(newStatus: any) {
   setStatuses((s) => ({ ...s, [uid]: newStatus }));
 }
 
-const myStatus =
+  const myStatus =
     statuses[String(user?._id || user?.id)] || null;
 
   function makeAvatarUrl(avatar?: string | null) {
@@ -191,12 +186,7 @@ const myStatus =
     return API + "/uploads/" + avatar;
   }
   
-  // Save sidebar collapsed state
-  useEffect(() => {
-    localStorage.setItem('sidebar-collapsed', String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
-  
-    // SOCKET SETUP -------------------------------------------------
+  // SOCKET SETUP -------------------------------------------------
   useEffect(() => {
     if (!token || !user) return;
 
@@ -802,201 +792,37 @@ const myStatus =
   
   // ---- MAIN LAYOUT ----
   return (
-    <div className={`layout container flex gap-4 p-4 min-h-screen relative ${view === 'chat' ? 'chat-active' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      {/* ---------------- SIDEBAR ---------------- */}
-      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div>
-          {/* Header / Logo / Theme toggle */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="flex items-center justify-between w-full px-2 mb-4">
-              <button
-                className="p-2 rounded-lg border border-slate-600 hover:bg-slate-700/40"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                {sidebarCollapsed ? "☰" : "✕"}
-              </button>
-              <button
-                className="p-2 rounded-lg border border-slate-600 hover:bg-slate-700/40"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                {theme === "dark" ? "☀️" : "🌙"}
-              </button>
-            </div>
-            
-            <div className="flex flex-col items-center gap-3">
-              <img
-                src={logo}
-                className="w-20 h-20 rounded-xl object-cover shadow-lg"
-                alt="logo"
-              />
-              <h2 className="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                BANJA
-              </h2>
-            </div>
-          </div>
-
-          {/* CURRENT USER */}
-          <div className="flex items-center gap-3">
-            <Avatar
-              src={makeAvatarUrl(user?.avatar)}
-              className="w-14 h-14 rounded-md object-cover"
-              alt={user?.username || "User"}
-            />
-            <div>
-              <div className="font-bold">{user?.username}</div>
-              <div className="text-sm opacity-70">{user?.email}</div>
-
-              {myStatus && (
-                <div className="text-xs mt-1 flex gap-1 items-center">
-                  <span>{myStatus.emoji}</span>
-                  <span className="opacity-80">{myStatus.mood}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* STATUS PICKER */}
-          <div className="mt-4">
-            <StatusPicker
-              token={token}
-              currentStatus={myStatus}
-              onUpdated={onMyStatusUpdated}
-            />
-          </div>
-
-          {/* USERS / FOLLOWERS / FOLLOWING */}
-          <div className="mt-4 p-2">
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2"
-              onClick={() => {
-                setView("dashboard");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              🏠 Dashboard
-            </button>
-            
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2 mt-2"
-              onClick={() => {
-                setView("discover");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              🔍 Discover
-            </button>
-            
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center gap-2 mt-2"
-              onClick={() => {
-                setView("my-events");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              📅 My Events
-            </button>
-            
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 mt-2"
-              onClick={() => {
-                setView("all-users");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              📋 All Users
-            </button>
-          </div>
-
-          {/* AVATAR UPLOAD */}
-          <div className="mt-4">
-            <label className="block text-sm mb-2">Change Profile</label>
-            <input type="file" accept="image/*" onChange={uploadAvatarDirect} />
-
-            {selectedAvatar && (
-              <div className="flex gap-2 mt-2">
-                <button className="btn" onClick={saveAvatar}>
-                  Save
-                </button>
-                <button
-                  className="px-3 py-2 border rounded-md"
-                  onClick={() => setSelectedAvatar(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* ROOMS */}
-          <div className="mt-6">
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 font-semibold"
-              onClick={() => {
-                setView("rooms");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              🏠 Rooms
-            </button>
-          </div>
-
-          {/* DIRECT MESSAGES */}
-          <div className="mt-6">
-            <button
-              className="w-full text-left px-2 py-2 rounded-md hover:bg-slate-800/40 flex items-center justify-between font-semibold"
-              onClick={() => {
-                setView("direct-messages");
-                setInDM(false);
-                setActiveConversation(null);
-              }}
-            >
-              <span>💬 Direct Messages</span>
-              <span className="text-xs opacity-60">
-                ({conversations.length})
-              </span>
-            </button>
-          </div>
-
-          {/* SEARCH USERS */}
-          <div className="mt-4 px-2">
-            <SearchUsers
-              token={token}
-              currentUserId={user?._id}
-              onShowProfile={(u: any) => showProfile(u)}
-              onOpenConversation={(c: any) => openConversation(c)}
-            />
-          </div>
-        </div>
-
-        {/* LOGOUT - Always visible */}
-        <div>
-          <button 
-            className="btn w-full mt-6" 
-            onClick={logout}
-          >
-            Log Out
-          </button>
-          
-          {/* Copyright - always visible on mobile, hidden when collapsed on desktop */}
-          <div className="mt-4 pt-4 border-t border-slate-700 text-center sidebar-copyright">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              © {new Date().getFullYear()}
-            </p>
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1">
-              SIMON KATHULU
-            </p>
-          </div>
-        </div>
-      </aside>
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#071029] dark:via-[#0a1435] dark:to-[#071029]">
+      {/* Unified Sidebar */}
+      {token && (
+        <Sidebar
+          token={token}
+          user={user}
+          theme={theme}
+          myStatus={myStatus}
+          onNavigate={(v) => {
+            setView(v as any);
+            setInDM(false);
+            setActiveConversation(null);
+          }}
+          onThemeToggle={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onLogout={logout}
+          onStatusUpdated={onMyStatusUpdated}
+          onShowProfile={showProfile}
+          onOpenConversation={openConversation}
+          onAvatarUpload={uploadAvatarDirect}
+          onAvatarSave={saveAvatar}
+          onAvatarCancel={() => setSelectedAvatar(null)}
+          selectedAvatar={selectedAvatar}
+          conversations={conversations}
+          makeAvatarUrl={makeAvatarUrl}
+        />
+      )}
 
       {/* ---------------- MAIN VIEW ---------------- */}
-      <main className="main flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col p-4 lg:p-6 overflow-auto"
+      {/* ---------------- MAIN VIEW ---------------- */}
+      <main className="flex-1 flex flex-col p-4 lg:p-6 overflow-auto">
         {/* DASHBOARD PAGE */}
         {view === "dashboard" && (
           <Dashboard
@@ -1433,9 +1259,6 @@ const myStatus =
           </div>
         </div>
       )}
-
-      {/* Right Sidebar */}
-      {token && <Sidebar token={token} onNavigate={(v) => setView(v)} />}
     </div>
   );
 }
