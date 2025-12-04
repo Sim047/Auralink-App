@@ -250,17 +250,6 @@ export default function Sidebar({
               className="w-10 h-10 rounded-lg object-cover"
               alt="logo"
             />
-            <button
-              onClick={onThemeToggle}
-              className="group p-1.5 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-700/60 transition-all duration-300"
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700 group-hover:text-slate-600 transition-colors" />
-              )}
-            </button>
           </div>
         )}
       </div>
