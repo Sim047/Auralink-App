@@ -53,11 +53,26 @@ type User = {
 
 export default function App() {
   const [theme, setTheme] = useState<string>(getInitialTheme());
+  
   useEffect(() => {
+    // Add smooth transition class
+    document.documentElement.style.setProperty('--theme-transition', '0.3s');
+    
+    // Update theme class
     document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
+    
+    // Persist theme
     localStorage.setItem(THEME_KEY, theme);
+    
+    // Log for debugging
+    console.log(`Theme switched to: ${theme}`);
   }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  };
 
   // AUTH --------------------------------------
   const [token, setToken] = useState<string | null>(
@@ -814,7 +829,7 @@ function onMyStatusUpdated(newStatus: any) {
             setInDM(false);
             setActiveConversation(null);
           }}
-          onThemeToggle={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onThemeToggle={toggleTheme}
           onLogout={logout}
           onStatusUpdated={onMyStatusUpdated}
           onShowProfile={showProfile}

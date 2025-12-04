@@ -202,10 +202,14 @@ export default function Sidebar({
             <div className="flex items-center justify-between w-full">
               <button
                 onClick={onThemeToggle}
-                className="p-2 rounded-lg border border-slate-600 hover:bg-slate-700/40 transition-all"
+                className="group relative p-2 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-700/60 transition-all duration-300"
                 title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
-                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {theme === "dark" ? (
+                  <Sun className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700 group-hover:text-slate-600 transition-colors" />
+                )}
               </button>
             </div>
             <img
@@ -226,9 +230,14 @@ export default function Sidebar({
             />
             <button
               onClick={onThemeToggle}
-              className="p-1.5 rounded-lg hover:bg-slate-700/40 transition-all"
+              className="group p-1.5 rounded-lg border border-slate-600 hover:border-cyan-500 hover:bg-slate-700/60 transition-all duration-300"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700 group-hover:text-slate-600 transition-colors" />
+              )}
             </button>
           </div>
         )}

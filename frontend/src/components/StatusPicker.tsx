@@ -11,7 +11,7 @@ export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!token) return;
+    if (!token || (!mood && !emoji)) return;
     try {
       setSaving(true);
       console.log("StatusPicker: Saving status:", { mood, emoji });
@@ -21,9 +21,11 @@ export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
         { headers: { Authorization: "Bearer " + token } }
       );
       console.log("StatusPicker: Received response:", res.data);
-      if (res.data) {
-        console.log("StatusPicker: Calling onUpdated with:", res.data);
-        onUpdated(res.data);
+      // Backend returns { success: true, status: {...} }
+      const statusData = res.data?.status || res.data;
+      if (statusData) {
+        console.log("StatusPicker: Calling onUpdated with:", statusData);
+        onUpdated(statusData);
       }
       setOpen(false);
     } catch (err) {
@@ -63,34 +65,69 @@ export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
 
   return (
     <div className="status-picker">
-      <div className="flex justify-between items-center mb-1">
-        <h4 className="font-semibold text-sm opacity-70">Status</h4>
-        <button className="text-xs text-cyan-400 hover:underline" onClick={() => setOpen(!open)}>{open ? "Close" : "Set status"}</button>
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="font-semibold text-sm text-slate-300">Status</h4>
+        <button 
+          className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline transition-colors font-medium" 
+          onClick={() => setOpen(!open)}
+        >
+          {open ? "Close" : "Set status"}
+        </button>
       </div>
 
       {!open && currentStatus && (
-        <div className="py-1 px-2 rounded-md inline-flex items-center gap-2 card-status">
-          <span>{currentStatus.emoji}</span>
-          <span className="text-sm opacity-80">{currentStatus.mood}</span>
+        <div className="py-2 px-3 rounded-lg inline-flex items-center gap-2 bg-slate-700/50 border border-slate-600">
+          <span className="text-lg">{currentStatus.emoji}</span>
+          <span className="text-sm font-medium text-slate-200">{currentStatus.mood}</span>
         </div>
       )}
 
+      {!open && !currentStatus && (
+        <p className="text-xs text-slate-400 italic">No status set</p>
+      )}
+
       {open && (
-        <div className="p-3 rounded-lg card-editor mt-2">
-          <div className="flex gap-2 mb-3">
+        <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700 mt-2">
+          <div className="flex gap-2 mb-3 flex-wrap">
             {presets.map((p) => (
-              <button key={p.mood} className="px-2 py-1 rounded-md text-xs bg-slate-700 hover:bg-slate-600" onClick={() => setPreset(p)}>
+              <button 
+                key={p.mood} 
+                className="px-3 py-1.5 rounded-lg text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 hover:border-slate-500 transition-all font-medium" 
+                onClick={() => setPreset(p)}
+              >
                 {p.emoji} {p.mood}
               </button>
             ))}
           </div>
 
-          <input className="input w-full mb-2" placeholder="Custom status" value={mood} onChange={(e) => setMood(e.target.value)} />
-          <input className="input w-full mb-3" placeholder="Emoji" value={emoji} onChange={(e) => setEmoji(e.target.value)} />
+          <input 
+            className="w-full mb-2 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20" 
+            placeholder="Enter your status" 
+            value={mood} 
+            onChange={(e) => setMood(e.target.value)} 
+          />
+          <input 
+            className="w-full mb-3 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20" 
+            placeholder="Emoji (e.g., 😊)" 
+            value={emoji} 
+            onChange={(e) => setEmoji(e.target.value)} 
+            maxLength={4}
+          />
 
           <div className="flex gap-2">
-            <button className="btn flex-1" onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</button>
-            <button className="px-4 py-2 border rounded-md" onClick={clearStatus}>Clear</button>
+            <button 
+              className="flex-1 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={save} 
+              disabled={saving || (!mood && !emoji)}
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button 
+              className="px-4 py-2 border border-slate-600 hover:bg-slate-700 rounded-lg transition-all text-sm font-medium" 
+              onClick={clearStatus}
+            >
+              Clear
+            </button>
           </div>
         </div>
       )}

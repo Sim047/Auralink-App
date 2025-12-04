@@ -12,46 +12,61 @@
    THEME VARIABLES
    --------------------------------------------------------- */
 
+/* Base theme transition */
+:root {
+  --theme-transition: 0.3s;
+}
+
 /* Light Theme */
 :root.light {
-  --bg: #f5f6f7;
+  --bg: #f0f4f8;
+  --bg-secondary: #ffffff;
   --sidebar: #ffffff;
-  --text: #0f172a;
+  --text: #1e293b;
+  --text-secondary: #475569;
   --muted: #64748b;
 
   --card: #ffffff;
   --card-solid: #ffffff;
-  --border: #e6e8ec;
+  --border: #e2e8f0;
 
-  --bubble-mine: #d3f8c6;
-  --bubble-other: #ffffff;
+  --bubble-mine: #dcfce7;
+  --bubble-other: #f1f5f9;
 
-  --date-pill: #e9eef3;
+  --date-pill: #e0e7ff;
 
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
-  --btn-text: #0b1220;
+  --btn-text: #0f172a;
+  
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
 }
 
 /* Dark Theme — fully solid boxes (no see-through) */
 :root.dark {
-  --bg: #071029;
-  --sidebar: #071829;            /* solid sidebar */
-  --text: #e6eef8;
-  --muted: #9aa7bb;
+  --bg: #0a0e1a;
+  --bg-secondary: #111827;
+  --sidebar: #0f172a;
+  --text: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --muted: #94a3b8;
 
-  --card: #0f172a;               /* main card/bg for panels */
-  --card-solid: #0f172a;         /* explicit solid color */
-  --border: rgba(255,255,255,0.06);
+  --card: #1e293b;
+  --card-solid: #1e293b;
+  --border: rgba(148, 163, 184, 0.1);
 
-  --bubble-mine: rgba(34,211,238,0.12);
-  --bubble-other: rgba(255,255,255,0.03);
+  --bubble-mine: rgba(34,211,238,0.15);
+  --bubble-other: rgba(255,255,255,0.05);
 
-  --date-pill: rgba(148,163,184,0.10);
+  --date-pill: rgba(148,163,184,0.12);
 
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
-  --btn-text: #071029;
+  --btn-text: #0f172a;
+  
+  --input-bg: #1e293b;
+  --input-border: rgba(148, 163, 184, 0.2);
 }
 
 /* =========================================================
@@ -67,8 +82,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  transition: background 0.18s ease, color 0.18s ease;
+  transition: background var(--theme-transition) ease, color var(--theme-transition) ease;
   margin: 0;
+}
+
+* {
+  transition: background-color var(--theme-transition) ease, 
+              border-color var(--theme-transition) ease, 
+              color var(--theme-transition) ease;
 }
 
 /* utility: consistent box look for any card/panel/modal */
