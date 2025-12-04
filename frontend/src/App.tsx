@@ -1399,25 +1399,30 @@ function onMyStatusUpdated(newStatus: any) {
               )}
 
               <div className="flex flex-col gap-2">
-                <textarea
-                  className="input w-full pt-3 pl-3 pr-3 pb-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 border border-slate-300 dark:border-slate-600 resize-none overflow-y-auto overflow-x-hidden"
-                  style={{ 
-                    minHeight: '44px', 
-                    maxHeight: '120px'
-                  }}
-                  wrap="soft"
-                  value={text}
-                  onChange={onComposerChange}
-                  onKeyDown={handleKeyPress}
-                  placeholder={inDM ? (enterToSend ? "Message... (Enter to send)" : "Message... (Ctrl+Enter to send)") : (enterToSend ? "Say something... (Enter to send)" : "Say something... (Ctrl+Enter to send)")}
-                  rows={1}
-                  onInput={(e: any) => {
-                    // Auto-resize textarea as user types
-                    e.target.style.height = 'auto';
-                    const newHeight = Math.min(e.target.scrollHeight, 120);
-                    e.target.style.height = newHeight + 'px';
-                  }}
-                />
+                <div className="relative">
+                  <textarea
+                    className="input w-full pt-3 pl-3 pr-3 pb-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 border border-slate-300 dark:border-slate-600 resize-none overflow-y-auto overflow-x-hidden leading-6"
+                    style={{ 
+                      minHeight: '48px',
+                      maxHeight: '144px',
+                      height: '48px'
+                    }}
+                    wrap="soft"
+                    value={text}
+                    onChange={onComposerChange}
+                    onKeyDown={handleKeyPress}
+                    placeholder={inDM ? (enterToSend ? "Message... (Enter to send)" : "Message... (Ctrl+Enter to send)") : (enterToSend ? "Say something... (Enter to send)" : "Say something... (Ctrl+Enter to send)")}
+                    rows={1}
+                    onInput={(e: any) => {
+                      // Auto-resize textarea as user types - expand when scrollHeight exceeds current height
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = '48px';
+                      if (target.scrollHeight > 48) {
+                        target.style.height = Math.min(target.scrollHeight, 144) + 'px';
+                      }
+                    }}
+                  />
+                </div>
                 <div className="flex items-center justify-end gap-1">
                   <div className="flex items-center gap-1 bg-white dark:bg-slate-800 rounded-full pl-2">
                   {/* Image Button with Icon */}
