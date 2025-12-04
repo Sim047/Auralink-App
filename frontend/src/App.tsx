@@ -113,6 +113,9 @@ export default function App() {
 
   // STATUS ------------------------------------
   const [statuses, setStatuses] = useState<Record<string, any>>({});
+  
+  // ONLINE USERS ------------------------------
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   // UI refs
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -389,6 +392,18 @@ function onMyStatusUpdated(newStatus: any) {
         const uid = String(payload.user._id || payload.user);
         setStatuses((s) => ({ ...s, [uid]: payload }));
       }
+    });
+    
+    socket.on("presence_update", ({ userId, status }: { userId: string; status: "online" | "offline" }) => {
+      setOnlineUsers((prev) => {
+        const updated = new Set(prev);
+        if (status === "online") {
+          updated.add(userId);
+        } else {
+          updated.delete(userId);
+        }
+        return updated;
+      });
     });
 
     return () => {
@@ -1051,6 +1066,7 @@ function onMyStatusUpdated(newStatus: any) {
           user={user}
           theme={theme}
           myStatus={myStatus}
+          isOnline={user?._id ? onlineUsers.has(user._id) : false}
           onNavigate={(v) => {
             setView(v as any);
             setInDM(false);

@@ -30,6 +30,7 @@ interface SidebarProps {
   user: any;
   theme: string;
   myStatus: any;
+  isOnline?: boolean;
   onNavigate?: (view: string) => void;
   onThemeToggle: () => void;
   onLogout: () => void;
@@ -49,6 +50,7 @@ export default function Sidebar({
   user,
   theme,
   myStatus,
+  isOnline = false,
   onNavigate,
   onThemeToggle,
   onLogout,
@@ -238,7 +240,12 @@ export default function Sidebar({
               alt={user?.username || "User"}
             />
             <div className="flex-1 min-w-0">
-              <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
+              <div className="flex items-center gap-2">
+                <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
+                {isOnline && (
+                  <div className="flex-shrink-0 w-2.5 h-2.5 bg-green-500 rounded-full" title="Online"></div>
+                )}
+              </div>
               <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.role?.toUpperCase() || "USER"}</div>
             </div>
           </div>
