@@ -1247,7 +1247,7 @@ function onMyStatusUpdated(newStatus: any) {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none bg-white dark:bg-slate-800" style={{ border: '1px solid var(--border)' }}>
+                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg shadow-xl focus:outline-none bg-slate-900 border border-slate-700 z-50">
                       <div className="py-1">
                         {/* Enter Key Toggle */}
                         <Menu.Item>
