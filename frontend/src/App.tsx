@@ -259,8 +259,14 @@ function onMyStatusUpdated(newStatus: any) {
   const uid = String(user?._id || user?.id);
   console.log("App: onMyStatusUpdated called with:", newStatus, "for user:", uid);
   setStatuses((s) => {
-    const updated = { ...s, [uid]: newStatus };
-    console.log("App: Updated statuses map:", updated);
+    const updated = { ...s };
+    if (newStatus === null) {
+      delete updated[uid];
+      console.log("App: Cleared status for user:", uid);
+    } else {
+      updated[uid] = newStatus;
+      console.log("App: Updated status for user:", uid, newStatus);
+    }
     return updated;
   });
 }
