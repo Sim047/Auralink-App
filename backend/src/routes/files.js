@@ -1,40 +1,51 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
 import sharp from 'sharp';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads');
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, Date.now() + '-' + Math.round(Math.random()*1e9) + ext);
-  }
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-const upload = multer({ storage });
+
+// Use memory storage instead of disk
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 const router = express.Router();
 
-router.post('/upload', upload.single('file'), async (req,res)=>{
-  try{
-    if(!req.file) return res.status(400).json({ message:'No file' });
-    const filePath = path.join(uploadDir, req.file.filename);
-    const ext = path.extname(req.file.filename).toLowerCase();
-    let finalName = req.file.filename;
-    if (['.png','.jpg','.jpeg','.webp'].includes(ext)) {
-      const out = filePath + '-resized.jpg';
-      await sharp(filePath).resize({ width: 1200 }).jpeg({ quality: 80 }).toFile(out);
-      try { fs.unlinkSync(filePath); } catch(e){}
-      finalName = path.basename(out);
-    }
-    res.json({ url: '/uploads/' + finalName });
-  }catch(err){
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file' });
+    
+    // Resize image using sharp
+    const resizedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 1200, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+    
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { 
+          folder: 'auralink/messages',
+          resource_type: 'auto'
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(resizedBuffer);
+    });
+    
+    res.json({ url: result.secure_url });
+  } catch (err) {
     console.error('[files/upload] ', err);
     res.status(500).json({ message: err.message });
   }
