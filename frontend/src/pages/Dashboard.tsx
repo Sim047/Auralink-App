@@ -441,10 +441,8 @@ export default function Dashboard({ token, onNavigate }: any) {
                 <Bell className="w-6 h-6 text-white" />
               </div>
             </div>
-          </div>        </div>
-
-        {/* Notifications */}
-        {notifications.length > 0 && (        </div>
+          </div>
+        </div>
 
         {/* Notifications */}
         {notifications.length > 0 && (
