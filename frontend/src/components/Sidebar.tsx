@@ -146,8 +146,10 @@ export default function Sidebar({
     }
   ];
 
-  // Calculate total unread messages from conversations
-  const totalUnreadMessages = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+  // Calculate total unread messages from conversations (only if conversations array exists and has items)
+  const totalUnreadMessages = Array.isArray(conversations) 
+    ? conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0) 
+    : 0;
 
   // Helper component for navigation buttons
   const NavButton = ({ icon: Icon, label, badge, isCollapsed, onClick }: any) => (

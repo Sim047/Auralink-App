@@ -16,6 +16,7 @@ export default function ConversationsList({
 }: any) {
   const [conversations, setConversations] = useState([]);
   const [totalUnread, setTotalUnread] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
@@ -23,6 +24,7 @@ export default function ConversationsList({
   }, [token]);
 
   function loadConversations() {
+    setLoading(true);
     axios
       .get(API + "/api/conversations", {
         headers: { Authorization: "Bearer " + token },
@@ -31,11 +33,19 @@ export default function ConversationsList({
         const convs = r.data || [];
         setConversations(convs);
         
-        // Calculate total unread
+        // Calculate total unread - only from conversations that actually exist
         const total = convs.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
         setTotalUnread(total);
+        console.log(`[ConversationsList] Loaded ${convs.length} conversations, ${total} unread`);
       })
-      .catch((err) => console.error("ConversationsList error:", err));
+      .catch((err) => {
+        console.error("ConversationsList error:", err);
+        setConversations([]);
+        setTotalUnread(0);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   function avatarUrl(u: any) {
@@ -54,8 +64,8 @@ export default function ConversationsList({
         headers: { Authorization: "Bearer " + token },
       });
       
-      // Remove from list
-      setConversations((prev) => prev.filter((c: any) => c._id !== convId));
+      // Reload conversations from server (will filter out if empty)
+      loadConversations();
     } catch (err) {
       console.error("Delete conversation error:", err);
       alert("Failed to delete conversation");
@@ -71,9 +81,8 @@ export default function ConversationsList({
         headers: { Authorization: "Bearer " + token },
       });
       
-      // Reload conversations to update unread count
+      // Reload conversations from server (will filter out if empty)
       loadConversations();
-      alert("Messages cleared");
     } catch (err) {
       console.error("Clear messages error:", err);
       alert("Failed to clear messages");
@@ -82,14 +91,18 @@ export default function ConversationsList({
 
   return (
     <div className="flex flex-col gap-2 sm:gap-3">
-      {/* Total Unread Badge */}
-      {totalUnread > 0 && (
+      {/* Total Unread Badge - only show if there are actual conversations with unread messages */}
+      {!loading && conversations.length > 0 && totalUnread > 0 && (
         <div className="sticky top-0 z-10 bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-4 py-2 rounded-lg text-center font-semibold shadow-lg">
           {totalUnread} unread message{totalUnread !== 1 ? 's' : ''}
         </div>
       )}
 
-      {conversations.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12 text-slate-600 dark:text-slate-400">
+          Loading conversations...
+        </div>
+      ) : conversations.length === 0 ? (
         <div className="text-center py-12 text-slate-600 dark:text-slate-400">
           <div className="text-4xl mb-3">💬</div>
           <div>No conversations yet</div>
