@@ -4,6 +4,7 @@ import path from "path";
 import multer from "multer";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
+import { v2 as cloudinary } from 'cloudinary';
 
 import auth from "../middleware/auth.js";
 import User from "../models/User.js";
@@ -15,6 +16,15 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 /* ---------------------------------------------
+   CLOUDINARY CONFIG
+--------------------------------------------- */
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+/* ---------------------------------------------
    MULTER MEMORY STORAGE
 --------------------------------------------- */
 const upload = multer({
@@ -23,32 +33,46 @@ const upload = multer({
 });
 
 /* ---------------------------------------------
-   1) UPLOAD AVATAR
+   1) UPLOAD AVATAR (CLOUDINARY)
 --------------------------------------------- */
 router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const userId = req.user.id;
-    const outputDir = path.join(__dirname, "../..", "uploads", "avatars");
-    const filename = `${userId}-${Date.now()}.jpg`;
-    const filepath = path.join(outputDir, filename);
+    // Resize avatar to 800x800
+    const resizedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 800, height: 800, fit: 'cover' })
+      .jpeg({ quality: 85 })
+      .toBuffer();
 
-    import("fs").then((fs) => {
-      if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { 
+          folder: 'auralink/avatars',
+          public_id: `user_${req.user.id}_${Date.now()}`,
+          resource_type: 'image',
+          transformation: [
+            { width: 800, height: 800, crop: 'fill' },
+            { quality: 'auto' }
+          ]
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(resizedBuffer);
     });
 
-    await sharp(req.file.buffer).resize(300, 300).jpeg({ quality: 85 }).toFile(filepath);
-
-    const avatarUrl = `/uploads/avatars/${filename}`;
-
+    // Update user with Cloudinary URL
     const updatedUser = await User.findByIdAndUpdate(
-      userId, 
-      { avatar: avatarUrl },
+      req.user.id, 
+      { avatar: result.secure_url },
       { new: true }
     ).select("_id username email avatar role");
 
-    res.json({ success: true, avatar: avatarUrl, user: updatedUser });
+    res.json({ success: true, avatar: result.secure_url, user: updatedUser });
   } catch (err) {
     console.error("POST /api/users/avatar ERROR:", err);
     res.status(500).json({ message: "Avatar upload failed" });
