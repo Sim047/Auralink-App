@@ -1,591 +1,664 @@
-// frontend/src/pages/Discover.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Trophy,
+  ShoppingBag,
+  Heart,
+  Activity,
+  Sparkles,
+  Plus,
+  Filter,
+  X,
+  Star,
+  Package,
+  Stethoscope,
+  Dumbbell,
+  ArrowRight,
+  Clock,
+  DollarSign,
+  Phone,
+  Mail,
+  Tag,
+  Search,
+  ChevronLeft,
+} from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { 
-  Search, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Trophy,
-  Award,
-  Sparkles,
-  DollarSign,
-  ArrowRight
-} from "lucide-react";
 
 dayjs.extend(relativeTime);
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-// Comprehensive Sports List
-const ALL_SPORTS = [
-  // Olympic Sports
-  { name: "Football/Soccer", category: "Team Sports", icon: "⚽", popular: true },
-  { name: "Basketball", category: "Team Sports", icon: "🏀", popular: true },
-  { name: "Volleyball", category: "Team Sports", icon: "🏐", popular: true },
-  { name: "Tennis", category: "Racquet Sports", icon: "🎾", popular: true },
-  { name: "Swimming", category: "Aquatic Sports", icon: "🏊", popular: true },
-  { name: "Athletics/Track & Field", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Gymnastics", category: "Artistic Sports", icon: "🤸", popular: true },
-  { name: "Boxing", category: "Combat Sports", icon: "🥊", popular: true },
-  { name: "Cycling", category: "Individual Sports", icon: "🚴", popular: true },
-  { name: "Baseball", category: "Team Sports", icon: "⚾", popular: true },
-  
-  // Major World Sports
-  { name: "Cricket", category: "Team Sports", icon: "🏏", popular: true },
-  { name: "Rugby", category: "Team Sports", icon: "🏉", popular: true },
-  { name: "Hockey (Ice)", category: "Team Sports", icon: "🏒", popular: true },
-  { name: "Hockey (Field)", category: "Team Sports", icon: "🏑", popular: true },
-  { name: "Golf", category: "Individual Sports", icon: "⛳", popular: true },
-  
-  // Combat Sports
-  { name: "Wrestling", category: "Combat Sports", icon: "🤼", popular: false },
-  { name: "Judo", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Karate", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Taekwondo", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Kung Fu", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Mixed Martial Arts (MMA)", category: "Combat Sports", icon: "🥊", popular: true },
-  { name: "Kickboxing", category: "Combat Sports", icon: "🥊", popular: false },
-  { name: "Muay Thai", category: "Combat Sports", icon: "🥊", popular: false },
-  { name: "Fencing", category: "Combat Sports", icon: "🤺", popular: false },
-  
-  // Racquet Sports
-  { name: "Badminton", category: "Racquet Sports", icon: "🏸", popular: true },
-  { name: "Table Tennis/Ping Pong", category: "Racquet Sports", icon: "🏓", popular: true },
-  { name: "Squash", category: "Racquet Sports", icon: "🎾", popular: false },
-  { name: "Racquetball", category: "Racquet Sports", icon: "🎾", popular: false },
-  { name: "Pickleball", category: "Racquet Sports", icon: "🏸", popular: false },
-  
-  // Aquatic Sports
-  { name: "Diving", category: "Aquatic Sports", icon: "🤿", popular: false },
-  { name: "Water Polo", category: "Aquatic Sports", icon: "🤽", popular: false },
-  { name: "Synchronized Swimming", category: "Aquatic Sports", icon: "🏊", popular: false },
-  { name: "Surfing", category: "Aquatic Sports", icon: "🏄", popular: true },
-  { name: "Rowing", category: "Aquatic Sports", icon: "🚣", popular: false },
-  { name: "Canoeing/Kayaking", category: "Aquatic Sports", icon: "🛶", popular: false },
-  { name: "Sailing", category: "Aquatic Sports", icon: "⛵", popular: false },
-  
-  // Winter Sports
-  { name: "Skiing (Alpine)", category: "Winter Sports", icon: "⛷️", popular: true },
-  { name: "Skiing (Cross-Country)", category: "Winter Sports", icon: "⛷️", popular: false },
-  { name: "Snowboarding", category: "Winter Sports", icon: "🏂", popular: true },
-  { name: "Ice Skating", category: "Winter Sports", icon: "⛸️", popular: true },
-  { name: "Figure Skating", category: "Winter Sports", icon: "⛸️", popular: false },
-  { name: "Speed Skating", category: "Winter Sports", icon: "⛸️", popular: false },
-  { name: "Curling", category: "Winter Sports", icon: "🥌", popular: false },
-  { name: "Bobsled", category: "Winter Sports", icon: "🛷", popular: false },
-  { name: "Luge", category: "Winter Sports", icon: "🛷", popular: false },
-  { name: "Skeleton", category: "Winter Sports", icon: "🛷", popular: false },
-  { name: "Biathlon", category: "Winter Sports", icon: "⛷️", popular: false },
-  
-  // Extreme Sports
-  { name: "Skateboarding", category: "Extreme Sports", icon: "🛹", popular: true },
-  { name: "BMX", category: "Extreme Sports", icon: "🚴", popular: false },
-  { name: "Mountain Biking", category: "Extreme Sports", icon: "🚵", popular: true },
-  { name: "Parkour/Freerunning", category: "Extreme Sports", icon: "🏃", popular: false },
-  { name: "Rock Climbing", category: "Extreme Sports", icon: "🧗", popular: true },
-  { name: "Bouldering", category: "Extreme Sports", icon: "🧗", popular: false },
-  { name: "Skydiving", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Bungee Jumping", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Base Jumping", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Hang Gliding", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Paragliding", category: "Extreme Sports", icon: "🪂", popular: false },
-  
-  // Motor Sports
-  { name: "Formula 1", category: "Motor Sports", icon: "🏎️", popular: true },
-  { name: "NASCAR", category: "Motor Sports", icon: "🏎️", popular: true },
-  { name: "Rally Racing", category: "Motor Sports", icon: "🏎️", popular: false },
-  { name: "MotoGP", category: "Motor Sports", icon: "🏍️", popular: true },
-  { name: "Motocross", category: "Motor Sports", icon: "🏍️", popular: false },
-  { name: "Go-Karting", category: "Motor Sports", icon: "🏎️", popular: false },
-  
-  // Target Sports
-  { name: "Archery", category: "Target Sports", icon: "🏹", popular: false },
-  { name: "Shooting Sports", category: "Target Sports", icon: "🎯", popular: false },
-  { name: "Darts", category: "Target Sports", icon: "🎯", popular: false },
-  
-  // Equestrian Sports
-  { name: "Horse Racing", category: "Equestrian Sports", icon: "🏇", popular: true },
-  { name: "Show Jumping", category: "Equestrian Sports", icon: "🏇", popular: false },
-  { name: "Dressage", category: "Equestrian Sports", icon: "🏇", popular: false },
-  { name: "Polo", category: "Equestrian Sports", icon: "🏇", popular: false },
-  
-  // Artistic Sports
-  { name: "Cheerleading", category: "Artistic Sports", icon: "📣", popular: false },
-  { name: "Trampolining", category: "Artistic Sports", icon: "🤸", popular: false },
-  { name: "Rhythmic Gymnastics", category: "Artistic Sports", icon: "🤸", popular: false },
-  
-  // Mind Sports
-  { name: "Chess", category: "Mind Sports", icon: "♟️", popular: true },
-  { name: "Checkers", category: "Mind Sports", icon: "⚫", popular: false },
-  { name: "Go (Baduk/Weiqi)", category: "Mind Sports", icon: "⚫", popular: false },
-  { name: "Poker", category: "Mind Sports", icon: "🃏", popular: false },
-  { name: "Bridge", category: "Mind Sports", icon: "🃏", popular: false },
-  { name: "Esports/Gaming", category: "Mind Sports", icon: "🎮", popular: true },
-  
-  // Dance Sports
-  { name: "Ballroom Dancing", category: "Dance Sports", icon: "💃", popular: false },
-  { name: "Hip Hop Dance", category: "Dance Sports", icon: "💃", popular: false },
-  { name: "Ballet", category: "Dance Sports", icon: "🩰", popular: false },
-  { name: "Breakdancing/Breaking", category: "Dance Sports", icon: "🕺", popular: true },
-  
-  // Other Individual Sports
-  { name: "Triathlon", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Marathon Running", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Decathlon", category: "Individual Sports", icon: "🏃", popular: false },
-  { name: "Pentathlon", category: "Individual Sports", icon: "🏃", popular: false },
-  { name: "Bowling", category: "Individual Sports", icon: "🎳", popular: false },
-  { name: "Billiards/Pool", category: "Individual Sports", icon: "🎱", popular: false },
-  { name: "Snooker", category: "Individual Sports", icon: "🎱", popular: false },
-];
+type CategoryType = "sports" | "services" | "marketplace" | null;
 
-export default function Discover({ token, onViewProfile }: any) {
-  const [events, setEvents] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSport, setSelectedSport] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [showAllSports, setShowAllSports] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [joinModalOpen, setJoinModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [transactionCode, setTransactionCode] = useState("");
+interface Event {
+  _id: string;
+  title: string;
+  sport: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  maxParticipants: number;
+  participants: any[];
+  organizer: {
+    _id: string;
+    username: string;
+    avatar?: string;
+  };
+  requiresApproval: boolean;
+  cost?: number;
+  skillLevel?: string;
+}
+
+interface Service {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  sport?: string;
+  pricing: {
+    type: string;
+    amount: number;
+  };
+  location: {
+    type: string;
+    city?: string;
+    address?: string;
+  };
+  provider: {
+    _id: string;
+    username: string;
+    avatar?: string;
+  };
+  qualifications?: string[];
+  experience?: string;
+}
+
+interface MarketplaceItem {
+  _id: string;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  currency: string;
+  condition: string;
+  images: string[];
+  location?: string;
+  seller: {
+    _id: string;
+    username: string;
+    avatar?: string;
+  };
+  likes: string[];
+  views: number;
+  status: string;
+  createdAt: string;
+}
+
+export default function Discover() {
+  const [activeCategory, setActiveCategory] = useState<CategoryType>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [selectedSport, setSelectedSport] = useState("All Sports");
+  
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    loadEvents();
-  }, [token, selectedSport]);
+    if (activeCategory === "sports") {
+      fetchEvents();
+    } else if (activeCategory === "services") {
+      fetchServices();
+    } else if (activeCategory === "marketplace") {
+      fetchMarketplaceItems();
+    }
+  }, [activeCategory, selectedSport, filterCategory]);
 
-  async function loadEvents() {
-    if (!token) return;
-    
+  const fetchEvents = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Load all published events
-      const eventParams = new URLSearchParams();
-      if (selectedSport) eventParams.append('sport', selectedSport);
-      eventParams.append('status', 'published');
-      eventParams.append('limit', '50');
-      
-      const eventRes = await axios.get(`${API}/api/events?${eventParams}`, {
+      const sport = selectedSport === "All Sports" ? "" : selectedSport;
+      const response = await axios.get(`${API_URL}/events?sport=${sport}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      setEvents(eventRes.data.events || []);
-      
-    } catch (err) {
-      console.error("Error loading events:", err);
+      setEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const params = filterCategory ? `?category=${filterCategory}` : "";
+      const response = await axios.get(`${API_URL}/services${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setServices(response.data);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMarketplaceItems = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterCategory) params.append("category", filterCategory);
+      if (searchTerm) params.append("search", searchTerm);
+      const response = await axios.get(`${API_URL}/marketplace?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMarketplaceItems(response.data.items || response.data);
+    } catch (error) {
+      console.error("Error fetching marketplace items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleJoinEvent = async (eventId: string) => {
-    const event = events.find(e => e._id === eventId);
-    if (!event) return;
-
-    // If paid event, show modal to enter transaction code
-    if (event.pricing?.type === "paid") {
-      setSelectedEvent(event);
-      setJoinModalOpen(true);
-    } else {
-      // For free events, submit join request without transaction code
-      submitJoinRequest(eventId, "");
-    }
-  };
-
-  const submitJoinRequest = async (eventId: string, txCode: string) => {
     try {
-      console.log("📝 SIMPLE: Submitting booking for event:", eventId);
-      
-      // Use NEW simple booking system
-      const response = await axios.post(`${API}/api/bookings-simple/create`, 
-        { eventId, transactionCode: txCode }, 
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      
-      console.log("✅ SIMPLE: Booking created:", response.data);
-      alert("✅ Join request submitted! Check 'My Join Requests' in your dashboard.");
-      
-      setJoinModalOpen(false);
-      setTransactionCode("");
-      setSelectedEvent(null);
-      loadEvents();
-    } catch (err: any) {
-      console.error("❌ SIMPLE: Booking error:", err);
-      const errorMsg = err.response?.data?.error || "Failed to submit request";
-      alert("❌ " + errorMsg);
+      await axios.post(`${API_URL}/events/${eventId}/join`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchEvents();
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Failed to join event");
     }
   };
 
-  // Filter logic
-  const categories = ["All", ...new Set(ALL_SPORTS.map(s => s.category))];
-  
-  // Filter sports by category
-  const categorizedSports = !selectedCategory || selectedCategory === "All" 
-    ? ALL_SPORTS 
-    : ALL_SPORTS.filter(s => s.category === selectedCategory);
-  
-  // Filter sports by search query
-  const searchFilteredSports = searchQuery.trim() 
-    ? categorizedSports.filter(s => 
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : categorizedSports;
-  
-  const popularSports = ALL_SPORTS.filter(s => s.popular);
-  const displaySports = showAllSports ? searchFilteredSports : popularSports;
+  const handleLikeItem = async (itemId: string) => {
+    try {
+      await axios.post(`${API_URL}/marketplace/${itemId}/like`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchMarketplaceItems();
+    } catch (error) {
+      console.error("Error liking item:", error);
+    }
+  };
 
-  // Show sports grid when: expanded, category selected (not empty/All), or searching
-  const shouldShowSportsGrid = showAllSports || (selectedCategory && selectedCategory !== "All") || searchQuery.trim();
+  // Hub Landing Page
+  if (!activeCategory) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-5xl font-bold text-white mb-4">
+              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">More</span>
+            </h1>
+            <p className="text-gray-300 text-lg">
+              Explore sports events, professional services, and marketplace
+            </p>
+          </div>
 
-  // Filter events by search
-  const filteredEvents = events.filter(event =>
-    event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.sport?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+          {/* Category Cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Sports Events Card */}
+            <div
+              onClick={() => setActiveCategory("sports")}
+              className="group cursor-pointer bg-gradient-to-br from-cyan-500/10 to-blue-600/10 backdrop-blur-lg rounded-2xl p-8 border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20"
+            >
+              <div className="flex justify-center mb-6">
+                <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                  <Trophy className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white text-center mb-3">
+                Sports Events
+              </h2>
+              <p className="text-gray-300 text-center mb-6">
+                Find and join sports activities, tournaments, and training sessions
+              </p>
+              <div className="flex items-center justify-center text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                <span className="font-semibold">Explore Events</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
 
-  return (
-    <div className="min-h-screen p-6" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8">
-        <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text)' }}>
-          Discover Sports Events
-        </h1>
-        <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-          Browse events across all sports or filter by your favorite category
-        </p>
-        
-        {/* Search */}
-        <div className="flex items-center bg-slate-800/50 rounded-xl p-4 border border-slate-700 max-w-xl">
-          <Search className="w-5 h-5 text-slate-400 mr-3" />
-          <input
-            type="text"
-            placeholder="Search events by title, sport, or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 outline-none"
-            style={{ 
-              background: 'transparent',
-              color: 'var(--text)',
-              caretColor: 'var(--text)'
-            }}
-          />
+            {/* Medical Services Card */}
+            <div
+              onClick={() => setActiveCategory("services")}
+              className="group cursor-pointer bg-gradient-to-br from-purple-500/10 to-pink-600/10 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20"
+            >
+              <div className="flex justify-center mb-6">
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                  <Stethoscope className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white text-center mb-3">
+                Medical Services
+              </h2>
+              <p className="text-gray-300 text-center mb-6">
+                Physiotherapy, massage, nutrition, personal training & more
+              </p>
+              <div className="flex items-center justify-center text-purple-400 group-hover:text-purple-300 transition-colors">
+                <span className="font-semibold">Browse Services</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Marketplace Card */}
+            <div
+              onClick={() => setActiveCategory("marketplace")}
+              className="group cursor-pointer bg-gradient-to-br from-green-500/10 to-emerald-600/10 backdrop-blur-lg rounded-2xl p-8 border border-green-500/20 hover:border-green-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/20"
+            >
+              <div className="flex justify-center mb-6">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                  <ShoppingBag className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white text-center mb-3">
+                Marketplace
+              </h2>
+              <p className="text-gray-300 text-center mb-6">
+                Buy and sell sports equipment, apparel, supplements & gear
+              </p>
+              <div className="flex items-center justify-center text-green-400 group-hover:text-green-300 transition-colors">
+                <span className="font-semibold">Shop Now</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="mt-16 grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                {events.length || "—"}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Active Events</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                {services.length || "—"}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Services Available</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
+                {marketplaceItems.length || "—"}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Items for Sale</div>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Browse All Sports Section */}
-      <div className="max-w-7xl mx-auto mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Trophy className="w-6 h-6 text-slate-400 mr-2" />
-            <h2 className="text-3xl font-bold">Browse All Sports</h2>
+  // Sports Events View
+  if (activeCategory === "sports") {
+    const sportsList = ["All Sports", "Football", "Basketball", "Tennis", "Running", "Swimming", "Cycling", "Gym", "Volleyball", "Baseball"];
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Back Button & Header */}
+          <div className="mb-8">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center text-gray-300 hover:text-white mb-6 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Back to Discover
+            </button>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Sports Events <Trophy className="inline w-8 h-8 text-cyan-400 ml-2" />
+            </h1>
+            <p className="text-gray-300">Join sports activities and meet new people</p>
           </div>
-          <button
-            onClick={() => setShowAllSports(!showAllSports)}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 rounded-lg transition-all flex items-center gap-2"
-          >
-            {showAllSports ? 'Show Popular' : 'Show All Sports'}
-            <ArrowRight className={`w-4 h-4 transition-transform ${showAllSports ? 'rotate-90' : ''}`} />
-          </button>
-        </div>
 
-        {/* Category Filter */}
-        {shouldShowSportsGrid && (
-          <div className="flex gap-3 mb-6 flex-wrap">
-            {categories.map(cat => (
+          {/* Sport Filter */}
+          <div className="mb-8 flex gap-2 overflow-x-auto pb-2">
+            {sportsList.map((sport) => (
               <button
-                key={cat}
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  if (cat !== "All" && !showAllSports) {
-                    setShowAllSports(true);
-                  }
-                }}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-slate-600 border-2 border-slate-400 text-white'
-                    : 'bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-700/50'
+                key={sport}
+                onClick={() => setSelectedSport(sport)}
+                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  selectedSport === sport
+                    ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white"
+                    : "bg-white/10 text-gray-300 hover:bg-white/20"
                 }`}
               >
-                {cat}
+                {sport}
               </button>
             ))}
           </div>
-        )}
 
-        {/* Sports Grid - only show when expanded, category selected, or searching */}
-        {shouldShowSportsGrid && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {displaySports.map((sport) => (
-              <div
-                key={sport.name}
-                className="cursor-pointer group relative"
-              >
-                <div 
-                  onClick={() => setSelectedSport(sport.name)}
-                  className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur rounded-2xl p-4 border border-slate-600 hover:border-slate-400 transition-all duration-300 hover:scale-105 text-center min-h-[120px] flex flex-col items-center justify-center"
-                >
-                  <div className="text-3xl mb-2">{sport.icon}</div>
-                  <h3 className="font-semibold text-sm text-slate-200 group-hover:text-white transition-colors line-clamp-2 px-1">
-                    {sport.name}
-                  </h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Events Section */}
-      {selectedSport && (
-        <div className="max-w-7xl mx-auto mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <Calendar className="w-6 h-6 text-slate-400 mr-2" />
-              <h2 className="text-3xl font-bold">{selectedSport} Events</h2>
-            </div>
-            <button
-              onClick={() => setSelectedSport('')}
-              className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600 rounded-lg transition-all"
-            >
-              Clear Filter
-            </button>
-          </div>
+          {/* Events Grid */}
           {loading ? (
-            <p className="text-slate-300 text-center">Loading events...</p>
-          ) : filteredEvents.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
-                <div
-                  key={event._id}
-                  className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur rounded-2xl p-6 border border-slate-600 hover:border-slate-400 transition-all duration-300 hover:scale-105"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-bold text-white">{event.title}</h3>
-                    <Award className="w-6 h-6 text-slate-400" />
-                  </div>
-                  
-                  {/* Organizer Info */}
-                  {event.organizer && (
-                    <div 
-                      onClick={() => onViewProfile && onViewProfile(event.organizer._id)}
-                      className="flex items-center text-sm text-slate-400 mb-3 cursor-pointer hover:text-slate-200 transition-colors"
-                    >
-                      <Users className="w-4 h-4 mr-1" />
-                      <span>Organized by <span className="font-semibold">{event.organizer.username}</span></span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center text-sm text-slate-300 mb-2">
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                    {dayjs(event.startDate).format("MMM D, YYYY • h:mm A")}
-                  </div>
-                  <div className="flex items-center text-sm text-slate-300 mb-3">
-                    <MapPin className="w-4 h-4 mr-2 text-slate-400" />
-                    {event.location?.city ? (
-                      <span>
-                        {event.location.name && `${event.location.name}, `}
-                        {event.location.city}
-                        {event.location.state && `, ${event.location.state}`}
-                      </span>
-                    ) : (
-                      <span className="text-slate-500">Location TBD</span>
-                    )}
-                  </div>
-                  <p className="text-slate-300 text-sm mb-4 line-clamp-2">
-                    {event.description}
-                  </p>
-                  <div className="flex items-center justify-between text-sm mb-4">
-                    <div className="flex items-center text-slate-400">
-                      <Users className="w-4 h-4 mr-1" />
-                      {event.participants?.length || 0}/{event.maxParticipants}
-                    </div>
-                    {event.entryFee > 0 ? (
-                      <div className="flex items-center text-slate-300 font-semibold">
-                        <DollarSign className="w-4 h-4" />
-                        {event.entryFee} {event.currency || 'USD'}
-                      </div>
-                    ) : (
-                      <span className="text-slate-400 font-semibold">Free</span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleJoinEvent(event._id)}
-                    className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 px-4 py-2 rounded-lg font-medium transition-all border border-slate-500"
-                  >
-                    Join Event
-                  </button>
-                </div>
-              ))}
+            <div className="text-center text-gray-300 py-12">Loading events...</div>
+          ) : events.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">
+              <Trophy className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>No events found for {selectedSport}</p>
             </div>
           ) : (
-            <div className="text-center py-12 bg-slate-800/50 rounded-2xl border border-slate-700">
-              <Sparkles className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-              <p className="text-slate-400">No events found for {selectedSport}</p>
-              <p className="text-slate-500 text-sm mt-2">Try selecting a different sport</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* All Events Section (when no sport selected) */}
-      {!selectedSport && (
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-6">
-            <Calendar className="w-6 h-6 text-slate-400 mr-2" />
-            <h2 className="text-3xl font-bold">All Upcoming Events</h2>
-          </div>
-          {loading ? (
-            <p className="text-slate-300 text-center">Loading events...</p>
-          ) : filteredEvents.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
+              {events.map((event) => (
                 <div
                   key={event._id}
-                  className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur rounded-2xl p-6 border border-slate-600 hover:border-slate-400 transition-all duration-300 hover:scale-105"
+                  className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-cyan-400/50 transition-all hover:scale-105"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-1">{event.title}</h3>
-                      <span className="text-sm text-slate-400 bg-slate-700/50 px-2 py-1 rounded">
-                        {event.sport}
-                      </span>
+                      <h3 className="text-lg font-bold text-white mb-1">{event.title}</h3>
+                      <p className="text-sm text-cyan-400">{event.sport}</p>
                     </div>
-                    <Award className="w-6 h-6 text-slate-400" />
-                  </div>
-                  
-                  {/* Organizer Info */}
-                  {event.organizer && (
-                    <div 
-                      onClick={() => onViewProfile && onViewProfile(event.organizer._id)}
-                      className="flex items-center text-sm text-slate-400 mb-3 mt-2 cursor-pointer hover:text-slate-200 transition-colors"
-                    >
-                      <Users className="w-4 h-4 mr-1" />
-                      <span>Organized by <span className="font-semibold">{event.organizer.username}</span></span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center text-sm text-slate-300 mb-2 mt-3">
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                    {dayjs(event.startDate).format("MMM D, YYYY • h:mm A")}
-                  </div>
-                  <div className="flex items-center text-sm text-slate-300 mb-3">
-                    <MapPin className="w-4 h-4 mr-2 text-slate-400" />
-                    {event.location?.city ? (
-                      <span>
-                        {event.location.name && `${event.location.name}, `}
-                        {event.location.city}
-                        {event.location.state && `, ${event.location.state}`}
-                      </span>
-                    ) : (
-                      <span className="text-slate-500">Location TBD</span>
-                    )}
-                  </div>
-                  <p className="text-slate-300 text-sm mb-4 line-clamp-2">
-                    {event.description}
-                  </p>
-                  <div className="flex items-center justify-between text-sm mb-4">
-                    <div className="flex items-center text-slate-400">
-                      <Users className="w-4 h-4 mr-1" />
-                      {event.participants?.length || 0}/{event.maxParticipants}
-                    </div>
-                    {event.entryFee > 0 ? (
-                      <div className="flex items-center text-slate-300 font-semibold">
-                        <DollarSign className="w-4 h-4" />
-                        {event.entryFee} {event.currency || 'USD'}
+                    {event.cost && (
+                      <div className="bg-green-500/20 px-3 py-1 rounded-full">
+                        <span className="text-green-400 font-semibold text-sm">${event.cost}</span>
                       </div>
-                    ) : (
-                      <span className="text-slate-400 font-semibold">Free</span>
                     )}
                   </div>
+
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-2">{event.description}</p>
+
+                  <div className="space-y-2 text-sm text-gray-300 mb-4">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 text-purple-400" />
+                      {dayjs(event.date).format("MMM D, YYYY")} at {event.time}
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-2 text-pink-400" />
+                      {event.location}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-2 text-cyan-400" />
+                      {event.participants.length}/{event.maxParticipants} participants
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => handleJoinEvent(event._id)}
-                    className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 px-4 py-2 rounded-lg font-medium transition-all border border-slate-500"
+                    disabled={event.participants.some((p: any) => p._id === currentUser._id)}
+                    className={`w-full py-2 rounded-lg font-semibold transition-all ${
+                      event.participants.some((p: any) => p._id === currentUser._id)
+                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700"
+                    }`}
                   >
-                    Join Event
+                    {event.participants.some((p: any) => p._id === currentUser._id) ? "Joined" : "Join Event"}
                   </button>
                 </div>
               ))}
             </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Medical Services View
+  if (activeCategory === "services") {
+    const servicesList = [
+      "All", "personal-training", "group-classes", "nutrition", 
+      "physiotherapy", "sports-massage", "mental-coaching", "technique-analysis"
+    ];
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Back Button & Header */}
+          <div className="mb-8">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center text-gray-300 hover:text-white mb-6 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Back to Discover
+            </button>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Medical Services <Stethoscope className="inline w-8 h-8 text-purple-400 ml-2" />
+            </h1>
+            <p className="text-gray-300">Find professional health and training services</p>
+          </div>
+
+          {/* Service Filter */}
+          <div className="mb-8 flex gap-2 overflow-x-auto pb-2">
+            {servicesList.map((category) => (
+              <button
+                key={category}
+                onClick={() => setFilterCategory(category === "All" ? "" : category)}
+                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all capitalize ${
+                  (category === "All" && !filterCategory) || filterCategory === category
+                    ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white"
+                    : "bg-white/10 text-gray-300 hover:bg-white/20"
+                }`}
+              >
+                {category.replace(/-/g, " ")}
+              </button>
+            ))}
+          </div>
+
+          {/* Services Grid */}
+          {loading ? (
+            <div className="text-center text-gray-300 py-12">Loading services...</div>
+          ) : services.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">
+              <Stethoscope className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>No services found</p>
+            </div>
           ) : (
-            <div className="text-center py-12 bg-slate-800/50 rounded-2xl border border-slate-700">
-              <Sparkles className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-              <p className="text-slate-400">No events available yet</p>
-              <p className="text-slate-500 text-sm mt-2">Check back soon for upcoming events</p>
+            <div className="grid md:grid-cols-2 gap-6">
+              {services.map((service) => (
+                <div
+                  key={service._id}
+                  className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
+                      <p className="text-sm text-purple-400 capitalize">{service.category.replace(/-/g, " ")}</p>
+                    </div>
+                    <div className="bg-green-500/20 px-4 py-2 rounded-full">
+                      <span className="text-green-400 font-bold">
+                        ${service.pricing.amount}
+                        <span className="text-xs font-normal">/{service.pricing.type}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-300 text-sm mb-4">{service.description}</p>
+
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex items-center text-gray-300">
+                      <MapPin className="w-4 h-4 mr-2 text-pink-400" />
+                      {service.location.city || service.location.type}
+                    </div>
+                    {service.experience && (
+                      <div className="flex items-center text-gray-300">
+                        <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                        {service.experience}
+                      </div>
+                    )}
+                  </div>
+
+                  {service.qualifications && service.qualifications.length > 0 && (
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {service.qualifications.slice(0, 3).map((qual, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs"
+                          >
+                            {qual}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center text-gray-400 text-sm mb-4">
+                    <img
+                      src={service.provider.avatar || `https://ui-avatars.com/api/?name=${service.provider.username}`}
+                      alt={service.provider.username}
+                      className="w-6 h-6 rounded-full mr-2"
+                    />
+                    <span>{service.provider.username}</span>
+                  </div>
+
+                  <button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all">
+                    Contact Provider
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Join Request Modal */}
-      {joinModalOpen && selectedEvent && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Join Event
-            </h3>
-            
-            <div className="mb-6">
-              <h4 className="font-semibold text-white mb-2">{selectedEvent.title}</h4>
-              <div className="flex items-center gap-2 text-sm text-slate-300 mb-3">
-                <DollarSign className="w-4 h-4" />
-                <span className="font-medium">
-                  {selectedEvent.pricing?.amount} {selectedEvent.pricing?.currency || 'USD'}
-                </span>
-              </div>
-              
-              {selectedEvent.pricing?.paymentInstructions && (
-                <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-slate-300 font-medium mb-1">Payment Instructions:</p>
-                  <p className="text-sm text-slate-400">{selectedEvent.pricing.paymentInstructions}</p>
-                </div>
-              )}
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Transaction Code / Reference Number *
-                </label>
-                <input
-                  type="text"
-                  value={transactionCode}
-                  onChange={(e) => setTransactionCode(e.target.value)}
-                  placeholder="Enter your payment transaction code"
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-                />
-                <p className="text-xs text-slate-400 mt-1">
-                  This will be sent to the event organizer for verification
-                </p>
-              </div>
+  // Marketplace View
+  if (activeCategory === "marketplace") {
+    const categories = [
+      "All", "Sports Equipment", "Apparel & Clothing", "Footwear", 
+      "Accessories", "Supplements & Nutrition", "Fitness Tech & Wearables"
+    ];
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Back Button & Header */}
+          <div className="mb-8">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center text-gray-300 hover:text-white mb-6 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Back to Discover
+            </button>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Marketplace <ShoppingBag className="inline w-8 h-8 text-green-400 ml-2" />
+            </h1>
+            <p className="text-gray-300">Buy and sell sports equipment and gear</p>
+          </div>
+
+          {/* Search & Filter */}
+          <div className="mb-8 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && fetchMarketplaceItems()}
+                className="w-full bg-white/10 border border-white/20 rounded-lg pl-12 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-400/50"
+              />
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setJoinModalOpen(false);
-                  setTransactionCode("");
-                  setSelectedEvent(null);
-                }}
-                className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-all border border-slate-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => submitJoinRequest(selectedEvent._id, transactionCode)}
-                disabled={!transactionCode.trim()}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Request
-              </button>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setFilterCategory(category === "All" ? "" : category)}
+                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                    (category === "All" && !filterCategory) || filterCategory === category
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+                      : "bg-white/10 text-gray-300 hover:bg-white/20"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* Marketplace Grid */}
+          {loading ? (
+            <div className="text-center text-gray-300 py-12">Loading items...</div>
+          ) : marketplaceItems.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">
+              <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>No items found</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {marketplaceItems.map((item) => (
+                <div
+                  key={item._id}
+                  className="bg-white/10 backdrop-blur-lg rounded-xl overflow-hidden border border-white/20 hover:border-green-400/50 transition-all hover:scale-105"
+                >
+                  {/* Item Image */}
+                  <div className="relative h-48 bg-gray-800">
+                    {item.images && item.images.length > 0 ? (
+                      <img
+                        src={item.images[0]}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Package className="w-16 h-16 text-gray-600" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2 bg-black/50 backdrop-blur px-2 py-1 rounded-full text-xs text-white">
+                      {item.condition}
+                    </div>
+                  </div>
+
+                  {/* Item Details */}
+                  <div className="p-4">
+                    <h3 className="font-bold text-white mb-1 line-clamp-2">{item.title}</h3>
+                    <p className="text-sm text-gray-400 mb-2">{item.category}</p>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-2xl font-bold text-green-400">
+                        ${item.price}
+                        <span className="text-xs text-gray-400 ml-1">{item.currency}</span>
+                      </div>
+                      <button
+                        onClick={() => handleLikeItem(item._id)}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                      >
+                        <Heart
+                          className={`w-5 h-5 ${
+                            item.likes.includes(currentUser._id)
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-400"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center text-xs text-gray-400 mb-3">
+                      <img
+                        src={item.seller.avatar || `https://ui-avatars.com/api/?name=${item.seller.username}`}
+                        alt={item.seller.username}
+                        className="w-5 h-5 rounded-full mr-2"
+                      />
+                      <span>{item.seller.username}</span>
+                    </div>
+
+                    <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-emerald-700 transition-all">
+                      Contact Seller
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  return null;
 }
