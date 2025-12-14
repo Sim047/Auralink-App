@@ -199,128 +199,7 @@ router.post("/:id/like", auth, async (req, res) => {
   }
 });
 
-// Add comment
-router.post("/:id/comment", auth, async (req, res) => {
-  try {
-    const { text } = req.body;
-
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ error: "Comment text is required" });
-    }
-
-    const post = await Post.findById(req.params.id);
-
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
-
-    const comment = {
-      user: req.user.id,
-      text: text.trim(),
-      createdAt: new Date(),
-    };
-
-    post.comments.push(comment);
-    await post.save();
-    await post.populate("author", "username avatar email");
-    await post.populate("comments.user", "username avatar");
-
-    // Emit socket event
-    const io = req.app.get("io");
-    if (io) {
-      io.emit("post_commented", { postId: post._id, comment: post.comments[post.comments.length - 1] });
-    }
-
-    res.json(post);
-  } catch (err) {
-    console.error("Add comment error:", err);
-    res.status(500).json({ error: "Failed to add comment" });
-  }
-});
-
-// Delete comment
-router.delete("/:id/comment/:commentId", auth, async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
-
-    const comment = post.comments.id(req.params.commentId);
-
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
-    }
-
-    // Check if user is the comment author or post author
-    if (comment.user.toString() !== req.user.id && post.author.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    comment.deleteOne();
-    await post.save();
-    await post.populate("author", "username avatar email");
-    await post.populate("comments.user", "username avatar");
-
-    // Emit socket event
-    const io = req.app.get("io");
-    if (io) {
-      io.emit("post_comment_deleted", { postId: post._id, commentId: req.params.commentId });
-    }
-
-    res.json(post);
-  } catch (err) {
-    console.error("Delete comment error:", err);
-    res.status(500).json({ error: "Failed to delete comment" });
-  }
-});
-
-// Edit comment
-router.put("/:id/comment/:commentId", auth, async (req, res) => {
-  try {
-    const { text } = req.body;
-
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ error: "Comment text is required" });
-    }
-
-    const post = await Post.findById(req.params.id);
-
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
-
-    const comment = post.comments.id(req.params.commentId);
-
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
-    }
-
-    // Check if user is the comment author
-    if (comment.user.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    comment.text = text.trim();
-    await post.save();
-    await post.populate("author", "username avatar email");
-    await post.populate("comments.user", "username avatar");
-
-    // Emit socket event
-    const io = req.app.get("io");
-    if (io) {
-      io.emit("post_comment_edited", { postId: post._id, comment });
-    }
-
-    res.json(post);
-  } catch (err) {
-    console.error("Edit comment error:", err);
-    res.status(500).json({ error: "Failed to edit comment" });
-  }
-});
-
-// Like/Unlike comment
+// Like/Unlike comment (MUST come before generic comment routes)
 router.post("/:id/comment/:commentId/like", auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -368,7 +247,7 @@ router.post("/:id/comment/:commentId/like", auth, async (req, res) => {
   }
 });
 
-// Reply to comment
+// Reply to comment (MUST come before generic comment routes)
 router.post("/:id/comment/:commentId/reply", auth, async (req, res) => {
   try {
     const { text } = req.body;
@@ -415,6 +294,127 @@ router.post("/:id/comment/:commentId/reply", auth, async (req, res) => {
   } catch (err) {
     console.error("Reply to comment error:", err);
     res.status(500).json({ error: "Failed to reply to comment" });
+  }
+});
+
+// Add comment
+router.post("/:id/comment", auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comment = {
+      user: req.user.id,
+      text: text.trim(),
+      createdAt: new Date(),
+    };
+
+    post.comments.push(comment);
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("comments.user", "username avatar");
+
+    // Emit socket event
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("post_commented", { postId: post._id, comment: post.comments[post.comments.length - 1] });
+    }
+
+    res.json(post);
+  } catch (err) {
+    console.error("Add comment error:", err);
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
+
+// Edit comment
+router.put("/:id/comment/:commentId", auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    // Check if user is the comment author
+    if (comment.user.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    comment.text = text.trim();
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("comments.user", "username avatar");
+
+    // Emit socket event
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("post_comment_edited", { postId: post._id, comment });
+    }
+
+    res.json(post);
+  } catch (err) {
+    console.error("Edit comment error:", err);
+    res.status(500).json({ error: "Failed to edit comment" });
+  }
+});
+
+// Delete comment
+router.delete("/:id/comment/:commentId", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    // Check if user is the comment author or post author
+    if (comment.user.toString() !== req.user.id && post.author.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    comment.deleteOne();
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("comments.user", "username avatar");
+
+    // Emit socket event
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("post_comment_deleted", { postId: post._id, commentId: req.params.commentId });
+    }
+
+    res.json(post);
+  } catch (err) {
+    console.error("Delete comment error:", err);
+    res.status(500).json({ error: "Failed to delete comment" });
   }
 });
 
