@@ -46,6 +46,25 @@ const locationTypes = [
   { value: "hybrid", label: "Hybrid (Both)" },
 ];
 
+const CURRENCIES = [
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
+  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
+  { code: "ZAR", symbol: "R", name: "South African Rand" },
+  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
+  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
+  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
+  { code: "INR", symbol: "₹", name: "Indian Rupee" },
+  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
+  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
+  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
+  { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
+  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
+  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+];
+
 export default function CreateServiceModal({
   isOpen,
   onClose,
@@ -60,6 +79,8 @@ export default function CreateServiceModal({
     sport: editService?.sport || "",
     pricingType: editService?.pricing?.type || "per-session",
     amount: editService?.pricing?.amount || "",
+    currency: editService?.pricing?.currency || "USD",
+    paymentInstructions: editService?.paymentInstructions || "",
     locationType: editService?.location?.type || "in-person",
     city: editService?.location?.city || "",
     address: editService?.location?.address || "",
@@ -88,8 +109,9 @@ export default function CreateServiceModal({
         pricing: {
           type: formData.pricingType,
           amount: parseFloat(formData.amount),
-          currency: "USD",
+          currency: formData.currency,
         },
+        paymentInstructions: formData.paymentInstructions,
         duration: {
           value: parseInt(formData.duration),
           unit: formData.durationUnit,
@@ -240,40 +262,81 @@ export default function CreateServiceModal({
             />
           </div>
 
-          {/* Pricing */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <DollarSign className="inline w-4 h-4 mr-1" />
-                Pricing Type *
-              </label>
-              <select
-                name="pricingType"
-                value={formData.pricingType}
-                onChange={handleChange}
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
-              >
-                {pricingTypes.map((type) => (
-                  <option key={type.value} value={type.value} className="bg-slate-800">
-                    {type.label}
-                  </option>
-                ))}
-              </select>
+          {/* Pricing & Payment */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-purple-400" />
+              Pricing & Payment
+            </h3>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Pricing Type *
+                </label>
+                <select
+                  name="pricingType"
+                  value={formData.pricingType}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
+                >
+                  {pricingTypes.map((type) => (
+                    <option key={type.value} value={type.value} className="bg-slate-800">
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Currency *
+                </label>
+                <select
+                  name="currency"
+                  value={formData.currency}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
+                >
+                  {CURRENCIES.map((curr) => (
+                    <option key={curr.code} value={curr.code} className="bg-slate-800">
+                      {curr.symbol} {curr.code} - {curr.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Amount ({CURRENCIES.find(c => c.code === formData.currency)?.symbol}) *
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="50.00"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50"
+                />
+              </div>
             </div>
+
+            {/* Payment Instructions */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Amount (USD) *
+                Payment Instructions
               </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
+              <textarea
+                name="paymentInstructions"
+                value={formData.paymentInstructions}
                 onChange={handleChange}
-                required
-                min="0"
-                step="0.01"
-                placeholder="50.00"
+                rows={3}
+                placeholder="e.g., M-Pesa: 0712345678, Bank Transfer: Account 123456, Paypal: email@example.com..."
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50"
               />
             </div>

@@ -538,11 +538,36 @@ export default function Dashboard({ token, onNavigate }: any) {
                 Create Event
               </button>
               <button
-                onClick={() => onNavigate && onNavigate('my-events')}
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate('my-events');
+                    // Set active tab to services
+                    setTimeout(() => {
+                      const servicesTab = document.querySelector('[data-tab="services"]') as HTMLElement;
+                      if (servicesTab) servicesTab.click();
+                    }, 100);
+                  }
+                }}
                 className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Create Service
+              </button>
+              <button
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate('my-events');
+                    // Set active tab to products
+                    setTimeout(() => {
+                      const productsTab = document.querySelector('[data-tab="products"]') as HTMLElement;
+                      if (productsTab) productsTab.click();
+                    }, 100);
+                  }
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Sell Product
               </button>
             </div>
           </div>

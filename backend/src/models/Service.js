@@ -63,6 +63,9 @@ const serviceSchema = new mongoose.Schema(
         },
       ],
     },
+    paymentInstructions: {
+      type: String,
+    },
     duration: {
       value: Number, // e.g., 60
       unit: {
