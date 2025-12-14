@@ -491,7 +491,10 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                           Save
                         </button>
                         <button
-                          onClick={() => setEditingPostId(null)}
+                          onClick={() => {
+                            setEditingPostId(null);
+                            setEditPostData({ caption: "", location: "", tags: "" });
+                          }}
                           className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
                         >
                           Cancel
