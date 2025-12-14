@@ -22,7 +22,12 @@ router.get("/", async (req, res) => {
     if (location) query.location = new RegExp(location, "i");
     
     if (search) {
-      query.$text = { $search: search };
+      // Use regex search instead of text index to avoid index errors
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { tags: { $in: [new RegExp(search, "i")] } }
+      ];
     }
     
     if (minPrice || maxPrice) {
