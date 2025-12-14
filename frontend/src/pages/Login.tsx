@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Logo from "../assets/logo.png";   // ← ADD THIS
+import Logo from "../assets/auralink-logo.png";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
