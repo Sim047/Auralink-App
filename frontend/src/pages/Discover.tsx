@@ -536,6 +536,15 @@ export default function Discover() {
               ))}
             </div>
           )}
+
+          {/* Service Detail Modal */}
+          {selectedService && (
+            <ServiceDetailModal
+              service={selectedService}
+              onClose={() => setSelectedService(null)}
+              onMessage={handleMessageUser}
+            />
+          )}
         </div>
       </div>
     );
@@ -699,35 +708,21 @@ export default function Discover() {
               />
             </div>
           )}
+
+          {/* Product Detail Modal */}
+          {selectedProduct && (
+            <ProductDetailModal
+              product={selectedProduct}
+              onClose={() => setSelectedProduct(null)}
+              onLike={handleLikeItem}
+              onMessage={handleMessageUser}
+              currentUserId={currentUser._id}
+            />
+          )}
         </div>
       </div>
     );
   }
 
-  return (
-    <>
-      {/* Service Detail Modal */}
-      {selectedService && (
-        <ServiceDetailModal
-          service={selectedService}
-          onClose={() => setSelectedService(null)}
-          onMessage={handleMessageUser}
-        />
-      )}
-
-      {/* Product Detail Modal */}
-      {selectedProduct && (
-        <ProductDetailModal
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onLike={handleLikeItem}
-          onMessage={handleMessageUser}
-          currentUserId={currentUser._id}
-        />
-      )}
-
-      {/* Default null return when no category selected */}
-      {null}
-    </>
-  );
+  return null;
 }
