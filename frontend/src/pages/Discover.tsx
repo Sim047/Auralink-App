@@ -582,7 +582,13 @@ export default function Discover() {
                     <span>{service.provider.username}</span>
                   </div>
 
-                  <button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMessageUser(service.provider._id);
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all"
+                  >
                     Contact Provider
                   </button>
                 </div>
@@ -734,7 +740,13 @@ export default function Discover() {
                       <span>{item.seller.username}</span>
                     </div>
 
-                    <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-emerald-700 transition-all">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMessageUser(item.seller._id);
+                      }}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-emerald-700 transition-all"
+                    >
                       Contact Seller
                     </button>
                   </div>
