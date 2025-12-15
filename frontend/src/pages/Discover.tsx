@@ -226,7 +226,14 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   };
 
   const handleMessageUser = (userId: string) => {
-    onStartConversation(userId);
+    console.log("[Discover] handleMessageUser called with userId:", userId);
+    console.log("[Discover] onStartConversation function:", onStartConversation);
+    if (onStartConversation) {
+      onStartConversation(userId);
+    } else {
+      console.error("[Discover] onStartConversation is not defined!");
+      alert("Unable to start conversation - feature not initialized");
+    }
   };
 
   // Hub Landing Page

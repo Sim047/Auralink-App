@@ -924,21 +924,26 @@ function onMyStatusUpdated(newStatus: any) {
 
   // START DM WITH USER ID ----------------------------------------
   async function startConversationWithUser(userId: string) {
+    console.log("[App] startConversationWithUser called with userId:", userId);
+    console.log("[App] token exists:", !!token);
+    
     if (!userId || !token) {
       alert("Please log in to send messages");
       return;
     }
 
     try {
+      console.log("[App] Creating conversation with partnerId:", userId);
       const res = await axios.post(
         API + "/api/conversations",
         { partnerId: userId },
         { headers: { Authorization: "Bearer " + token } }
       );
 
+      console.log("[App] Conversation created/fetched:", res.data);
       openConversation(res.data);
     } catch (e) {
-      console.error("Could not start conversation", e);
+      console.error("[App] Could not start conversation", e);
       alert("Unable to start conversation");
     }
   }

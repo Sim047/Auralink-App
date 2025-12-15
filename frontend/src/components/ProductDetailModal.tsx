@@ -168,7 +168,12 @@ export default function ProductDetailModal({
                     </div>
                   </div>
                   <button
-                    onClick={() => onMessage(product.seller._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("[ProductDetailModal] Contact button clicked, seller ID:", product.seller._id);
+                      console.log("[ProductDetailModal] onMessage function:", onMessage);
+                      onMessage(product.seller._id);
+                    }}
                     className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
                   >
                     <MessageCircle className="w-4 h-4" />

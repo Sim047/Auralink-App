@@ -94,7 +94,12 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
                 </div>
               </div>
               <button
-                onClick={() => onMessage(service.provider._id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("[ServiceDetailModal] Message button clicked, provider ID:", service.provider._id);
+                  console.log("[ServiceDetailModal] onMessage function:", onMessage);
+                  onMessage(service.provider._id);
+                }}
                 className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
               >
                 <MessageCircle className="w-4 h-4" />
