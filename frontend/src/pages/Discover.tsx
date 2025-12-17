@@ -634,19 +634,19 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           <div className="mt-16 grid grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                {events.length || "ΓÇö"}
+                {events.length || 0}
               </div>
               <div className="text-gray-400 text-sm mt-1">Active Events</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                {services.length || "ΓÇö"}
+                {services.length || 0}
               </div>
               <div className="text-gray-400 text-sm mt-1">Services Available</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
-                {marketplaceItems.length || "ΓÇö"}
+                {marketplaceItems.length || 0}
               </div>
               <div className="text-gray-400 text-sm mt-1">Items for Sale</div>
             </div>
