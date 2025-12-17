@@ -146,18 +146,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [participantsModalEvent, setParticipantsModalEvent] = useState<Event | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentModalEvent, setPaymentModalEvent] = useState<Event | null>(null);
+  const [paymentModalData, setPaymentModalData] = useState<{
+    show: boolean;
+    event: Event | null;
+  }>({ show: false, event: null });
   
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-
-  useEffect(() => {
-    console.log("[Discover] Payment modal state changed:", {
-      showPaymentModal,
-      hasEvent: !!paymentModalEvent,
-      shouldRender: showPaymentModal && paymentModalEvent
-    });
-  }, [showPaymentModal, paymentModalEvent]);
 
   useEffect(() => {
     if (activeCategory === "sports") {
@@ -228,15 +222,9 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       
       // If event has pricing and is paid, show payment modal
       if (event && event.pricing?.type === "paid") {
-        console.log("[Discover] Opening payment modal for paid event");
-        console.log("[Discover] Setting paymentModalEvent to:", event);
-        setPaymentModalEvent(event);
-        setShowPaymentModal(true);
-        console.log("[Discover] Modal state set to true");
+        setPaymentModalData({ show: true, event });
         return; // Wait for modal submission
       }
-      
-      console.log("[Discover] Proceeding with free event join");
       
       // Free event - proceed directly
       const response = await axios.post(
@@ -277,11 +265,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   };
 
   const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
-    if (!paymentModalEvent) return;
+    if (!paymentModalData.event) return;
     
     try {
       const response = await axios.post(
-        `${API_URL}/events/${paymentModalEvent._id}/join`,
+        `${API_URL}/events/${paymentModalData.event._id}/join`,
         {
           transactionCode,
           transactionDetails
@@ -292,8 +280,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       console.log("[Discover] Join paid event response:", response.data);
       
       // Close payment modal
-      setShowPaymentModal(false);
-      setPaymentModalEvent(null);
+      setPaymentModalData({ show: false, event: null });
       
       // Show success notification
       const requiresApproval = response.data.requiresApproval;
@@ -1135,20 +1122,13 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           )}
 
           {/* Payment Transaction Modal */}
-          {(() => {
-            console.log("[Discover] Checking modal render condition:", {
-              showPaymentModal,
-              hasPaymentModalEvent: !!paymentModalEvent,
-              willRender: showPaymentModal && paymentModalEvent
-            });
-            return showPaymentModal && paymentModalEvent ? (
-              <PaymentTransactionModal
-                event={paymentModalEvent}
-                onSubmit={handlePaymentSubmit}
-                onCancel={handlePaymentCancel}
-              />
-            ) : null;
-          })()}
+          {paymentModalData.show && paymentModalData.event && (
+            <PaymentTransactionModal
+              event={paymentModalData.event}
+              onSubmit={handlePaymentSubmit}
+              onCancel={() => setPaymentModalData({ show: false, event: null })}
+            />
+          )}
 
           {/* Notification Toast */}
           {notification && (

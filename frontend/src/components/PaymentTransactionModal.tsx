@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { X, DollarSign, CreditCard, AlertCircle } from "lucide-react";
 
 interface PaymentTransactionModalProps {
@@ -23,18 +23,6 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
   const [transactionCode, setTransactionCode] = useState("");
   const [transactionDetails, setTransactionDetails] = useState("");
   const [error, setError] = useState("");
-
-  console.log("[PaymentTransactionModal] ========== MODAL RENDERING ==========");
-  console.log("[PaymentTransactionModal] Event:", event);
-  console.log("[PaymentTransactionModal] Pricing:", event?.pricing);
-  console.log("[PaymentTransactionModal] Title:", event?.title);
-  
-  useEffect(() => {
-    console.log("[PaymentTransactionModal] Modal mounted!");
-    return () => {
-      console.log("[PaymentTransactionModal] Modal unmounted!");
-    };
-  }, []);
 
   const handleSubmit = () => {
     if (!transactionCode.trim()) {
