@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Stethoscope, DollarSign, MapPin, Award, Clock, Camera } from "lucide-react";
+import { X, Stethoscope, DollarSign, MapPin, Award, Clock, Camera, Info } from "lucide-react";
 import axios from "axios";
 import ImageUpload from "./ImageUpload";
 
@@ -125,8 +125,8 @@ export default function CreateServiceModal({
         },
         qualifications: formData.qualifications
           .split(",")
-          .map((q) => q.trim())
-          .filter((q) => q),
+          .map((q: string) => q.trim())
+          .filter((q: string) => q),
         experience: formData.experience,
         images: images,
         active: true,

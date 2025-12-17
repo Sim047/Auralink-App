@@ -22,6 +22,16 @@ interface Event {
   cost?: number;
   skillLevel?: string;
   image?: string;
+  pricing?: {
+    type: string;
+    amount: number;
+    currency: string;
+    paymentInstructions?: string;
+  };
+  capacity?: {
+    max: number;
+    current: number;
+  };
 }
 
 interface EventDetailModalProps {
