@@ -3,13 +3,18 @@
 
 const getBaseURL = (): string => {
   const envURL = import.meta.env.VITE_API_URL;
-  
-  // If VITE_API_URL is set, use it
-  if (envURL) {
-    // Remove trailing slash
-    return envURL.replace(/\/$/, '');
-  }
-  
+
+  // If VITE_API_URL is set at build time, use it
+  if (envURL) return envURL.replace(/\/$/, '');
+
+  // In production builds without an explicit VITE_API_URL, prefer the current origin
+  // so the frontend will call the same host (useful when backend is proxied).
+  try {
+    if (import.meta.env.MODE === 'production' && typeof window !== 'undefined') {
+      return window.location.origin.replace(/\/$/, '');
+    }
+  } catch (e) {}
+
   // Default for local development
   return 'http://localhost:5000';
 };
