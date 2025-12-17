@@ -183,56 +183,121 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   };
 
   const handleJoinEvent = async (eventId: string) => {
+    if (!token) {
+      alert("Please log in to join events");
+      return;
+    }
+    
     try {
-      await axios.post(`${API_URL}/events/${eventId}/join`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("[Discover] Joining event:", eventId);
+      const response = await axios.post(
+        `${API_URL}/events/${eventId}/join`, 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("[Discover] Join event response:", response.data);
+      alert(response.data.message || "Successfully joined event!");
       fetchEvents();
     } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to join event");
+      console.error("[Discover] Join event error:", error);
+      const message = error.response?.data?.message || error.response?.data?.error || "Failed to join event";
+      alert(message);
     }
   };
 
   const handleLikeItem = async (itemId: string) => {
+    if (!token) {
+      alert("Please log in to like items");
+      return;
+    }
+    
     try {
-      await axios.post(`${API_URL}/marketplace/${itemId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("[Discover] Liking item:", itemId);
+      const response = await axios.post(
+        `${API_URL}/marketplace/${itemId}/like`, 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("[Discover] Like response:", response.data);
+      
       fetchMarketplaceItems();
+      
       // Update the selected product if modal is open
       if (selectedProduct && selectedProduct._id === itemId) {
-        const response = await axios.get(`${API_URL}/marketplace/${itemId}`);
-        setSelectedProduct(response.data);
+        const productResponse = await axios.get(`${API_URL}/marketplace/${itemId}`);
+        setSelectedProduct(productResponse.data);
       }
-    } catch (error) {
-      console.error("Error liking item:", error);
+    } catch (error: any) {
+      console.error("[Discover] Error liking item:", error);
+      alert(error.response?.data?.message || "Failed to like item");
     }
   };
 
   const handleLikeService = async (serviceId: string) => {
+    if (!token) {
+      alert("Please log in to like services");
+      return;
+    }
+    
     try {
-      await axios.post(`${API_URL}/services/${serviceId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log("[Discover] Liking service:", serviceId);
+      const response = await axios.post(
+        `${API_URL}/services/${serviceId}/like`, 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("[Discover] Like service response:", response.data);
+      
       fetchServices();
+      
       // Update the selected service if modal is open
       if (selectedService && selectedService._id === serviceId) {
-        const response = await axios.get(`${API_URL}/services/${serviceId}`);
-        setSelectedService(response.data);
+        const serviceResponse = await axios.get(`${API_URL}/services/${serviceId}`);
+        setSelectedService(serviceResponse.data);
       }
-    } catch (error) {
-      console.error("Error liking service:", error);
+    } catch (error: any) {
+      console.error("[Discover] Error liking service:", error);
+      alert(error.response?.data?.message || "Failed to like service");
     }
   };
 
-  const handleMessageUser = (userId: string) => {
+  const handleMessageUser = async (userId: string) => {
     console.log("[Discover] handleMessageUser called with userId:", userId);
-    console.log("[Discover] onStartConversation function:", onStartConversation);
+    
+    if (!token) {
+      alert("Please log in to send messages");
+      return;
+    }
+    
+    // Use the callback if available
     if (onStartConversation) {
+      console.log("[Discover] Using onStartConversation callback");
       onStartConversation(userId);
-    } else {
-      console.error("[Discover] onStartConversation is not defined!");
-      alert("Unable to start conversation - feature not initialized");
+      return;
+    }
+    
+    // Fallback: create conversation directly
+    console.log("[Discover] Fallback: creating conversation directly");
+    try {
+      const response = await axios.post(
+        `${API_URL}/conversations`,
+        { partnerId: userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const conversation = response.data;
+      console.log("[Discover] Conversation created:", conversation);
+      
+      // Store in localStorage
+      localStorage.setItem("auralink-active-conversation", JSON.stringify(conversation));
+      localStorage.setItem("auralink-in-dm", "true");
+      
+      // Navigate to main view
+      alert("Opening conversation...");
+      window.location.href = "/";
+    } catch (error: any) {
+      console.error("[Discover] Error creating conversation:", error);
+      alert(error.response?.data?.message || "Failed to start conversation");
     }
   };
 
