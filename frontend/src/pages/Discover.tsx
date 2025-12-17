@@ -32,6 +32,7 @@ import { API_URL } from "../config/api";
 import ServiceDetailModal from "../components/ServiceDetailModal";
 import ProductDetailModal from "../components/ProductDetailModal";
 import EventDetailModal from "../components/EventDetailModal";
+import EventParticipantsModal from "../components/EventParticipantsModal";
 
 dayjs.extend(relativeTime);
 
@@ -141,6 +142,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceItem | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [participantsModalEvent, setParticipantsModalEvent] = useState<Event | null>(null);
   
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -259,6 +261,62 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       console.error("[Discover] Join event error:", error);
       const message = error.response?.data?.message || error.response?.data?.error || "Failed to join event";
       alert(message);
+    }
+  };
+
+  const handleApproveRequest = async (eventId: string, requestId: string) => {
+    if (!token) {
+      alert("Please log in to manage requests");
+      return;
+    }
+    
+    try {
+      console.log("[Discover] Approving request:", { eventId, requestId });
+      const response = await axios.post(
+        `${API_URL}/events/${eventId}/approve-request/${requestId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("[Discover] Approve response:", response.data);
+      alert(response.data.message || "Request approved successfully!");
+      
+      // Refresh event data
+      await fetchEvents();
+      if (participantsModalEvent && participantsModalEvent._id === eventId) {
+        const updatedEvent = await axios.get(`${API_URL}/events/${eventId}`);
+        setParticipantsModalEvent(updatedEvent.data);
+      }
+    } catch (error: any) {
+      console.error("[Discover] Approve request error:", error);
+      alert(error.response?.data?.message || "Failed to approve request");
+    }
+  };
+
+  const handleRejectRequest = async (eventId: string, requestId: string) => {
+    if (!token) {
+      alert("Please log in to manage requests");
+      return;
+    }
+    
+    try {
+      console.log("[Discover] Rejecting request:", { eventId, requestId });
+      const response = await axios.post(
+        `${API_URL}/events/${eventId}/reject-request/${requestId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("[Discover] Reject response:", response.data);
+      alert(response.data.message || "Request rejected successfully!");
+      
+      // Refresh event data
+      await fetchEvents();
+      if (participantsModalEvent && participantsModalEvent._id === eventId) {
+        const updatedEvent = await axios.get(`${API_URL}/events/${eventId}`);
+        setParticipantsModalEvent(updatedEvent.data);
+      }
+    } catch (error: any) {
+      console.error("[Discover] Reject request error:", error);
+      alert(error.response?.data?.message || "Failed to reject request");
     }
   };
 
@@ -591,7 +649,25 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               onJoin={handleJoinEvent}
               onMessage={handleMessageUser}
               onViewProfile={onViewProfile}
+              onViewParticipants={(event) => {
+                setParticipantsModalEvent(event);
+                setSelectedEvent(null);
+              }}
               currentUserId={currentUser._id}
+            />
+          )}
+          
+          {/* Event Participants Modal */}
+          {participantsModalEvent && (
+            <EventParticipantsModal
+              event={participantsModalEvent}
+              onClose={() => setParticipantsModalEvent(null)}
+              onMessage={handleMessageUser}
+              onViewProfile={onViewProfile}
+              onApproveRequest={handleApproveRequest}
+              onRejectRequest={handleRejectRequest}
+              currentUserId={currentUser._id}
+              isOrganizer={participantsModalEvent.organizer._id === currentUser._id}
             />
           )}
         </div>

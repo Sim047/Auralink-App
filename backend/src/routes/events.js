@@ -64,6 +64,7 @@ router.get("/", async (req, res) => {
     const events = await Event.find(query)
       .populate("organizer", "username email avatar")
       .populate("participants", "username avatar")
+      .populate("joinRequests.user", "username avatar email")
       .sort(sortOptions)
       .skip(skip)
       .limit(Number(limit));
@@ -91,7 +92,8 @@ router.get("/:id", async (req, res) => {
     const event = await Event.findById(req.params.id)
       .populate("organizer", "username email avatar")
       .populate("participants", "username avatar")
-      .populate("waitlist", "username avatar");
+      .populate("waitlist", "username avatar")
+      .populate("joinRequests.user", "username avatar email");
 
     if (!event) {
       return res.status(404).json({ error: "Event not found" });

@@ -40,6 +40,7 @@ interface EventDetailModalProps {
   onJoin: (eventId: string) => void;
   onMessage: (organizerId: string) => void;
   onViewProfile?: (userId: string) => void;
+  onViewParticipants?: (event: Event) => void;
   currentUserId?: string;
 }
 
@@ -48,6 +49,7 @@ export default function EventDetailModal({
   onClose, 
   onJoin, 
   onMessage,
+  onViewParticipants,
   onViewProfile,
   currentUserId 
 }: EventDetailModalProps) {
@@ -91,14 +93,18 @@ export default function EventDetailModal({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Event Image */}
+          {/* Event Poster/Image */}
           {event.image && (
-            <div className="rounded-xl overflow-hidden">
+            <div className="rounded-xl overflow-hidden shadow-2xl border-2 border-cyan-400/30">
               <img
                 src={event.image}
                 alt={event.title}
-                className="w-full h-64 object-cover"
+                className="w-full h-96 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                onClick={() => window.open(event.image, '_blank')}
               />
+              <div className="bg-gradient-to-t from-black/80 to-transparent p-4 -mt-20 relative z-10">
+                <p className="text-white text-sm font-semibold">📸 Click to view full size</p>
+              </div>
             </div>
           )}
 
@@ -218,22 +224,33 @@ export default function EventDetailModal({
             )}
           </div>
 
-          {/* Participants List */}
-          {event.participants.length > 0 && (
-            <div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Participants ({event.participants.length})
-              </h3>
+          {/* Participants Section - ALWAYS SHOW */}
+          <div className="bg-gradient-to-br from-purple-900/30 to-cyan-900/30 border border-cyan-400/30 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Users className="w-6 h-6 text-cyan-400" />
+                  Participants
+                </h3>
+                <p className="text-gray-300 text-sm mt-1">
+                  {event.participants.length} / {event.maxParticipants} joined
+                  {isOrganizer && " · Manage your attendees"}
+                </p>
+              </div>
+            </div>
+            
+            {/* Preview of Participants */}
+            {event.participants.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {event.participants.slice(0, 8).map((participant: any, idx: number) => (
                   <div 
                     key={idx} 
-                    className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center gap-2"
+                    className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center gap-2 hover:bg-white/10 transition-colors"
                   >
                     <img
                       src={participant.avatar || `https://ui-avatars.com/api/?name=${participant.username || 'User'}`}
                       alt={participant.username || 'User'}
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 rounded-full border-2 border-cyan-400/50"
                     />
                     <span className="text-white text-sm truncate">
                       {participant.username || 'User'}
@@ -242,14 +259,42 @@ export default function EventDetailModal({
                 ))}
                 {event.participants.length > 8 && (
                   <div className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-cyan-400 text-sm font-semibold">
                       +{event.participants.length - 8} more
                     </span>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+
+            {event.participants.length === 0 && !isOrganizer && (
+              <div className="text-center py-8 text-gray-400">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No participants yet. Be the first to join!</p>
+              </div>
+            )}
+
+            {event.participants.length === 0 && isOrganizer && (
+              <div className="text-center py-8 text-gray-400">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No participants yet. Share your event to get attendees!</p>
+              </div>
+            )}
+
+            {/* PROMINENT VIEW PARTICIPANTS BUTTON */}
+            <button
+              onClick={() => onViewParticipants && onViewParticipants(event)}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 text-lg"
+            >
+              <Users className="w-6 h-6" />
+              {isOrganizer 
+                ? "Manage Participants & Requests" 
+                : event.participants.length > 0
+                ? "View All Participants"
+                : "View Participant List"
+              }
+            </button>
+          </div>
 
           {/* Action Buttons */}
           {!isOrganizer && (
@@ -280,11 +325,18 @@ export default function EventDetailModal({
           )}
 
           {isOrganizer && (
-            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4">
-              <p className="text-cyan-400 text-sm flex items-center gap-2">
-                <UserIcon className="w-4 h-4" />
-                You are the organizer of this event
-              </p>
+            <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border-2 border-cyan-500/50 rounded-xl p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-cyan-400 text-lg font-bold flex items-center gap-2 mb-2">
+                    <UserIcon className="w-5 h-5" />
+                    You are the organizer
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    Manage join requests, view participants, and export attendee lists from the "Manage Participants" button above.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>

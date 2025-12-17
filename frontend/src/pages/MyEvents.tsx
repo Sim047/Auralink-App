@@ -23,6 +23,7 @@ import {
 import CreateEventModal from "../components/CreateEventModal";
 import CreateServiceModal from "../components/CreateServiceModal";
 import CreateProductModal from "../components/CreateProductModal";
+import EventParticipantsModal from "../components/EventParticipantsModal";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -41,6 +42,8 @@ export default function MyEvents({ token }: any) {
   const [editingService, setEditingService] = useState<any>(null);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [participantsModalEvent, setParticipantsModalEvent] = useState<any>(null);
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     if (!token) return;
@@ -162,6 +165,54 @@ export default function MyEvents({ token }: any) {
   function handleProductCreateSuccess() {
     loadMyProducts();
     setEditingProduct(null);
+  }
+
+  async function handleApproveRequest(eventId: string, requestId: string) {
+    try {
+      const res = await axios.post(
+        `${API}/api/events/${eventId}/approve-request/${requestId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(res.data.message || "Request approved!");
+      loadMyEvents();
+      if (participantsModalEvent && participantsModalEvent._id === eventId) {
+        const updatedEvent = await axios.get(`${API}/api/events/${eventId}`);
+        setParticipantsModalEvent(updatedEvent.data);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to approve request");
+    }
+  }
+
+  async function handleRejectRequest(eventId: string, requestId: string) {
+    try {
+      const res = await axios.post(
+        `${API}/api/events/${eventId}/reject-request/${requestId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(res.data.message || "Request rejected!");
+      loadMyEvents();
+      if (participantsModalEvent && participantsModalEvent._id === eventId) {
+        const updatedEvent = await axios.get(`${API}/api/events/${eventId}`);
+        setParticipantsModalEvent(updatedEvent.data);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to reject request");
+    }
+  }
+
+  function handleMessageUser(userId: string) {
+    // TODO: Implement messaging - integrate with your chat system
+    console.log("Message user:", userId);
+    alert("Messaging feature coming soon!");
+  }
+
+  function handleViewProfile(userId: string) {
+    // TODO: Implement profile viewing
+    console.log("View profile:", userId);
+    alert("Profile viewing coming soon!");
   }
 
   if (loading) {
@@ -439,16 +490,32 @@ export default function MyEvents({ token }: any) {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                      <Users className="w-4 h-4 text-slate-500" />
-                      <span>
-                        {event.capacity?.current || 0} / {event.capacity?.max || 0} participants
-                      </span>
-                      {event.waitlist?.length > 0 && (
-                        <span className="text-orange-500 text-xs">
-                          ({event.waitlist.length} on waitlist)
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <Users className="w-4 h-4 text-slate-500" />
+                        <span>
+                          {event.capacity?.current || 0} / {event.capacity?.max || 0} participants
                         </span>
-                      )}
+                        {event.waitlist?.length > 0 && (
+                          <span className="text-orange-500 text-xs">
+                            ({event.waitlist.length} on waitlist)
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* PROMINENT MANAGE PARTICIPANTS BUTTON */}
+                      <button
+                        onClick={() => setParticipantsModalEvent(event)}
+                        className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+                      >
+                        <Users className="w-4 h-4" />
+                        Manage Participants
+                        {event.joinRequests?.filter((r: any) => r.status === "pending").length > 0 && (
+                          <span className="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">
+                            {event.joinRequests.filter((r: any) => r.status === "pending").length}
+                          </span>
+                        )}
+                      </button>
                     </div>
 
                     {event.pricing?.type === "paid" && (
@@ -824,6 +891,20 @@ export default function MyEvents({ token }: any) {
         token={token}
         editProduct={editingProduct}
       />
+
+      {/* Event Participants Modal */}
+      {participantsModalEvent && (
+        <EventParticipantsModal
+          event={participantsModalEvent}
+          onClose={() => setParticipantsModalEvent(null)}
+          onMessage={handleMessageUser}
+          onViewProfile={handleViewProfile}
+          onApproveRequest={handleApproveRequest}
+          onRejectRequest={handleRejectRequest}
+          currentUserId={currentUser._id}
+          isOrganizer={true}
+        />
+      )}
     </div>
   );
 }
