@@ -220,8 +220,14 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       console.log("[Discover] Event pricing:", event?.pricing);
       console.log("[Discover] Is paid event?", event?.pricing?.type === "paid");
       
-      // If event has pricing and is paid, show payment modal
-      if (event && event.pricing?.type === "paid") {
+      // If event has pricing and is paid, or has a positive amount, show payment modal
+      const isPaidEvent =
+        !!event && (
+          event.pricing?.type === "paid" ||
+          (event.pricing?.amount && Number(event.pricing.amount) > 0)
+        );
+
+      if (isPaidEvent) {
         setPaymentModalData({ show: true, event });
         return; // Wait for modal submission
       }
