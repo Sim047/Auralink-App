@@ -113,6 +113,13 @@ const io = new Server(server, {
   },
 });
 
+// Ensure socket.io exposes Access-Control-Allow-Origin for HTTP polling endpoints
+// and also set common headers for preflight requests. Some proxies or platforms
+// may route socket polling through HTTP handlers that require explicit headers.
+io.opts.cors = io.opts.cors || {};
+io.opts.cors.credentials = true;
+io.opts.cors.allowedHeaders = ["Content-Type", "Authorization"];
+
 // expose io
 app.set("io", io);
 const onlineUsers = new Map();
@@ -120,6 +127,29 @@ app.set("onlineUsers", onlineUsers);
 
 // middleware
 // Express CORS — allow requests only from allowedOrigins or '*' handling
+// Echo/override CORS headers early for compatibility with socket.io polling
+// and proxies — set Access-Control-Allow-* for allowed origins.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  try {
+    if (!origin) {
+      // non-browser requests: allow
+      res.header('Access-Control-Allow-Origin', '*');
+      return next();
+    }
+
+    if (isOriginAllowed(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    }
+  } catch (e) {
+    // fall through
+  }
+  return next();
+});
+
 app.use(
   cors({
     origin: function (origin, callback) {
