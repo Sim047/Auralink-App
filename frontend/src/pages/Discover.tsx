@@ -1118,16 +1118,16 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           )}
 
           {/* Payment Transaction Modal */}
-          {paymentModalEvent && (() => {
-            console.log("[Discover] Rendering PaymentTransactionModal with event:", paymentModalEvent);
-            return (
+          {paymentModalEvent && (
+            <>
+              {console.log("[Discover] Rendering PaymentTransactionModal with event:", paymentModalEvent)}
               <PaymentTransactionModal
-                event={paymentModalEvent as any}
+                event={paymentModalEvent}
                 onSubmit={handlePaymentSubmit}
                 onCancel={() => setPaymentModalEvent(null)}
               />
-            );
-          })()}
+            </>
+          )}
 
           {/* Notification Toast */}
           {notification && (
