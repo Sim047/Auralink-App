@@ -63,9 +63,9 @@ export default function EventDetailModal({
                   {event.skillLevel}
                 </span>
               )}
-              {event.cost && (
+              {(event.cost || event.pricing?.amount) && (
                 <span className="bg-green-500/30 px-3 py-1 rounded-full text-sm font-semibold">
-                  ${event.cost}
+                  {event.pricing?.currency || "$"} {event.pricing?.amount || event.cost}
                 </span>
               )}
             </div>
@@ -184,6 +184,18 @@ export default function EventDetailModal({
                 <p className="text-yellow-400 text-sm flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   This event requires approval from the organizer
+                </p>
+              </div>
+            )}
+
+            {event.pricing?.type === "paid" && event.pricing.paymentInstructions && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <h4 className="text-blue-400 font-semibold mb-2 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Payment Instructions
+                </h4>
+                <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                  {event.pricing.paymentInstructions}
                 </p>
               </div>
             )}

@@ -44,7 +44,7 @@ interface Event {
   description: string;
   date: string;
   time: string;
-  location: string;
+  location: any;
   maxParticipants: number;
   participants: any[];
   organizer: {
@@ -55,6 +55,17 @@ interface Event {
   requiresApproval: boolean;
   cost?: number;
   skillLevel?: string;
+  image?: string;
+  pricing?: {
+    type: string;
+    amount: number;
+    currency: string;
+    paymentInstructions?: string;
+  };
+  capacity?: {
+    max: number;
+    current: number;
+  };
 }
 
 interface Service {
@@ -192,9 +203,38 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     
     try {
       console.log("[Discover] Joining event:", eventId);
+      
+      // Find the event to check if it's paid
+      const event = events.find(e => e._id === eventId) || selectedEvent;
+      let requestBody: any = {};
+      
+      // If event has pricing and is paid, ask for transaction code
+      if (event && (event as any).pricing?.type === "paid") {
+        const transactionCode = prompt(
+          `This is a paid event (${(event as any).pricing.currency} ${(event as any).pricing.amount}).\n\n` +
+          `Please enter your payment transaction code/reference:`,
+          ""
+        );
+        
+        if (!transactionCode) {
+          alert("Transaction code is required for paid events");
+          return;
+        }
+        
+        const transactionDetails = prompt(
+          "Optional: Add any payment details or notes:",
+          ""
+        );
+        
+        requestBody = {
+          transactionCode: transactionCode.trim(),
+          transactionDetails: transactionDetails?.trim() || ""
+        };
+      }
+      
       const response = await axios.post(
         `${API_URL}/events/${eventId}/join`, 
-        {}, 
+        requestBody, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("[Discover] Join event response:", response.data);
@@ -488,9 +528,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                       <h3 className="text-lg font-bold text-white mb-1">{event.title}</h3>
                       <p className="text-sm text-cyan-400">{event.sport}</p>
                     </div>
-                    {event.cost && (
+                    {(event.cost || event.pricing?.amount) && (
                       <div className="bg-green-500/20 px-3 py-1 rounded-full">
-                        <span className="text-green-400 font-semibold text-sm">${event.cost}</span>
+                        <span className="text-green-400 font-semibold text-sm">
+                          {event.pricing?.currency || "$"}{event.pricing?.amount || event.cost}
+                        </span>
                       </div>
                     )}
                   </div>
