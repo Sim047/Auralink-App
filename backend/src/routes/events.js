@@ -261,6 +261,9 @@ router.post("/:id/join", auth, async (req, res) => {
 
     // DECISION: Approve immediately or create request?
     const needsApproval = event.requiresApproval === true;
+    // Import Booking model
+    const Booking = (await import("../models/Booking.js")).default;
+    let bookingRecord;
 
     if (needsApproval) {
       // CREATE JOIN REQUEST
@@ -271,12 +274,29 @@ router.post("/:id/join", auth, async (req, res) => {
         requestedAt: new Date(),
         status: "pending",
       });
-      
       await event.save();
       await event.populate("joinRequests.user", "username avatar");
-      
       console.log("✅ Join request created");
-      
+
+      // Create booking record with status 'pending-approval'
+      bookingRecord = await Booking.create({
+        client: userId,
+        provider: event.organizer._id,
+        event: event._id,
+        bookingType: "event",
+        scheduledDate: event.date,
+        scheduledTime: event.time,
+        location: event.location,
+        status: "pending-approval",
+        approvalStatus: "pending",
+        pricing: event.pricing ? {
+          amount: event.pricing.amount,
+          currency: event.pricing.currency,
+          transactionCode: transactionCode || "FREE",
+          paymentInstructions: event.pricing.paymentInstructions,
+        } : undefined,
+      });
+
       // Emit socket notification
       const io = req.app.get("io");
       if (io) {
@@ -292,22 +312,38 @@ router.post("/:id/join", auth, async (req, res) => {
         success: true,
         message: "Join request submitted! Awaiting organizer approval.",
         event,
+        booking: bookingRecord,
         requiresApproval: true
       });
-      
     } else {
       // JOIN IMMEDIATELY
       console.log("Adding to participants immediately...");
       event.participants.push(userId);
-      
       if (event.capacity) {
         event.capacity.current = event.participants.length;
       }
-      
       await event.save();
       await event.populate("participants", "username avatar");
-      
       console.log("✅ User added to participants");
+
+      // Create booking record with status 'confirmed'
+      bookingRecord = await Booking.create({
+        client: userId,
+        provider: event.organizer._id,
+        event: event._id,
+        bookingType: "event",
+        scheduledDate: event.date,
+        scheduledTime: event.time,
+        location: event.location,
+        status: "confirmed",
+        approvalStatus: "approved",
+        pricing: event.pricing ? {
+          amount: event.pricing.amount,
+          currency: event.pricing.currency,
+          transactionCode: transactionCode || "FREE",
+          paymentInstructions: event.pricing.paymentInstructions,
+        } : undefined,
+      });
 
       // Emit socket notification
       const io = req.app.get("io");
@@ -324,6 +360,7 @@ router.post("/:id/join", auth, async (req, res) => {
         success: true,
         message: "Successfully joined event!",
         event,
+        booking: bookingRecord,
         requiresApproval: false
       });
     }
