@@ -179,7 +179,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
 
                 <div className="ml-13 space-y-1">
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {booking.event.title}
+                    {booking.event?.title || ''}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     📅 {dayjs(booking.event.startDate).format("MMM D, YYYY")}

@@ -14,37 +14,28 @@ interface JoinRequest {
   _id: string;
   user: Participant;
   transactionCode: string;
-  requestedAt: string;
+  if (!event) return null;
   status: string;
 }
 
 interface Event {
   _id: string;
-  title: string;
-  participants: Participant[];
-  joinRequests?: JoinRequest[];
-  organizer: {
-    _id: string;
-    username: string;
-  };
-  capacity?: {
-    max: number;
-    current: number;
-  };
-}
-
-interface EventParticipantsModalProps {
-  event: Event | null;
-  onClose: () => void;
   onMessage: (userId: string) => void;
-  onViewProfile?: (userId: string) => void;
-  onApproveRequest?: (eventId: string, requestId: string) => void;
-  onRejectRequest?: (eventId: string, requestId: string) => void;
-  currentUserId?: string;
-  isOrganizer?: boolean;
-}
-
-export default function EventParticipantsModal({
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const csv = (event.participants || []).map((p: any) => `${p.username || ''},${p._id || ''}`).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeTitle = (event.title || 'event').replace(/[^a-z0-9]/gi, '_');
+      a.download = `${safeTitle}_participants.csv`;
+      a.click();
+    } catch (err) {
+      console.error('Failed to download CSV', err);
+    }
+  };
   event,
   onClose,
   onMessage,

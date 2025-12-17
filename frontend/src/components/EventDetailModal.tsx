@@ -53,7 +53,7 @@ export default function EventDetailModal({
   onViewProfile,
   currentUserId 
 }: EventDetailModalProps) {
-  if (!event) return null;
+    if (!event) return null; // Guard against null event prop
 
   const [participantsCollapsed, setParticipantsCollapsed] = useState(true);
 

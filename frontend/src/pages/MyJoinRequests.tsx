@@ -198,7 +198,7 @@ export default function MyJoinRequests({ onBack, onNavigate }: any) {
                     {/* Event Title */}
                     <div className="flex items-start justify-between gap-4">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {booking.event.title}
+                        {booking.event?.title || ''}
                       </h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${getStatusColor(booking.status)}`}>
                         {getStatusIcon(booking.status)}

@@ -245,7 +245,7 @@ export default function PendingApprovals({ token, onBack, onNavigate }: any) {
                           {/* Event Details */}
                           <div className="space-y-2">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                              {booking.event.title}
+                              {booking.event?.title || ''}
                             </h3>
                             
                             <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
