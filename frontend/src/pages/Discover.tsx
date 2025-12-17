@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Calendar,
@@ -240,7 +240,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       
       setNotification({ 
         message: requiresApproval 
-          ? "✅ Join request submitted! The organizer will review your request."
+          ? "Γ£à Join request submitted! The organizer will review your request."
           : message,
         type: "success" 
       });
@@ -266,7 +266,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
   const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
     if (!paymentModalData.event) return;
-
+    
     try {
       const response = await axios.post(
         `${API_URL}/events/${paymentModalData.event._id}/join`,
@@ -276,37 +276,38 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      
       console.log("[Discover] Join paid event response:", response.data);
-
+      
       // Close payment modal
       setPaymentModalData({ show: false, event: null });
-
+      
       // Show success notification
       const requiresApproval = response.data.requiresApproval;
       setNotification({
         message: requiresApproval
-          ? "✅ Join request submitted! The organizer will verify your payment and approve your request."
-          : "✅ Successfully joined event!",
+          ? "Γ£à Join request submitted! The organizer will verify your payment and approve your request."
+          : "Γ£à Successfully joined event!",
         type: "success"
       });
-
+      
       // Refresh events list
       await fetchEvents();
-
+      
       // Update selected event if modal is open
-      if (selectedEvent && selectedEvent._id === paymentModalData.event._id) {
+      if (selectedEvent && selectedEvent._id === paymentModalEvent._id) {
         try {
-          const updatedEvent = await axios.get(`${API_URL}/events/${paymentModalData.event._id}`);
+          const updatedEvent = await axios.get(`${API_URL}/events/${paymentModalEvent._id}`);
           setSelectedEvent(updatedEvent.data);
         } catch (err) {
           console.error("Failed to refresh event details:", err);
         }
       }
-    } catch (error) {
-      setPaymentModalData({ show: false, event: null });
+    } catch (error: any) {
+      conShowPaymentModal(false);
+      setPaymentModalEvent(null);
       setNotification({
-        message: error?.response?.data?.message || error?.response?.data?.error || "Failed to submit join request",
+        message: error.response?.data?.message || error.response?.data?.error || "Failed to submit join request",
         type: "error"
       });
     }
@@ -333,7 +334,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       );
       console.log("[Discover] Approve response:", response.data);
       setNotification({ 
-        message: response.data.message || "✅ Request approved! Participant added to event.", 
+        message: response.data.message || "Γ£à Request approved! Participant added to event.", 
         type: "success" 
       });
       
@@ -517,67 +518,66 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       const conversation = response.data;
       console.log("[Discover] Conversation created:", conversation);
       
-      if (!token) {
-        setNotification({ message: "Please log in to join events", type: "warning" });
-        return;
-      }
+      // Store in localStorage
+      localStorage.setItem("auralink-active-conversation", JSON.stringify(conversation));
+      localStorage.setItem("auralink-in-dm", "true");
+      
+      // Navigate to main view
+      setNotification({ message: "Opening conversation...", type: "info" });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+    } catch (error: any) {
+      console.error("[Discover] Error creating conversation:", error);
+      setNotification({ 
+        message: error.response?.data?.message || "Failed to start conversation", 
+        type: "error" 
+      });
+    }
+  };
 
-      try {
-        console.log("[Discover] === JOIN EVENT START ===");
-        console.log("[Discover] Event ID:", eventId);
+  // Hub Landing Page
+  if (!activeCategory) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-5xl font-bold text-white mb-4">
+              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">More</span>
+            </h1>
+            <p className="text-gray-300 text-lg">
+              Explore sports events, professional services, and marketplace
+            </p>
+          </div>
 
-        // Find the event to check if it's paid and/or requires approval
-        const event = events.find(e => e._id === eventId) || selectedEvent;
-        console.log("[Discover] Event found:", event);
-        console.log("[Discover] Event pricing:", event?.pricing);
-        console.log("[Discover] Is paid event?", event?.pricing?.type === "paid");
-        console.log("[Discover] Requires approval?", event?.requiresApproval);
+          {/* Category Cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Sports Events Card */}
+            <div
+              onClick={() => setActiveCategory("sports")}
+              className="group cursor-pointer bg-gradient-to-br from-cyan-500/10 to-blue-600/10 backdrop-blur-lg rounded-2xl p-8 border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20"
+            >
+              <div className="flex justify-center mb-6">
+                <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                  <Trophy className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white text-center mb-3">
+                Sports Events
+              </h2>
+              <p className="text-gray-300 text-center mb-6">
+                Find and join sports activities, tournaments, and training sessions
+              </p>
+              <div className="flex items-center justify-center text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                <span className="font-semibold">Explore Events</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
 
-        // If event is paid and requires approval, always show payment modal
-        if (event && event.pricing?.type === "paid") {
-          setPaymentModalData({ show: true, event });
-          return; // Wait for modal submission
-        }
-
-        // Free event - proceed directly
-        const response = await axios.post(
-          `${API_URL}/events/${eventId}/join`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log("[Discover] Join event response:", response.data);
-
-        // Show success message with proper notification
-        const message = response.data.message || "Successfully joined event!";
-        const requiresApproval = response.data.requiresApproval;
-
-        setNotification({
-          message: requiresApproval
-            ? "✅ Join request submitted! The organizer will review your request."
-            : message,
-          type: "success"
-        });
-
-        // Refresh events list
-        await fetchEvents();
-
-        // Update selected event if modal is open
-        if (selectedEvent && selectedEvent._id === eventId) {
-          try {
-            const updatedEvent = await axios.get(`${API_URL}/events/${eventId}`);
-            setSelectedEvent(updatedEvent.data);
-          } catch (err) {
-            console.error("Failed to refresh event details:", err);
-          }
-        }
-      } catch (error) {
-        setPaymentModalData({ show: false, event: null });
-        setNotification({
-          message: error?.response?.data?.error || "Failed to join event.",
-          type: "error"
-        });
-      }
-    };
+            {/* Medical Services Card */}
+            <div
+              onClick={() => setActiveCategory("services")}
               className="group cursor-pointer bg-gradient-to-br from-purple-500/10 to-pink-600/10 backdrop-blur-lg rounded-2xl p-8 border border-purple-500/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20"
             >
               <div className="flex justify-center mb-6">
@@ -624,19 +624,19 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           <div className="mt-16 grid grid-cols-3 gap-6 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                {events.length || "—"}
+                {events.length || "ΓÇö"}
               </div>
               <div className="text-gray-400 text-sm mt-1">Active Events</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                {services.length || "—"}
+                {services.length || "ΓÇö"}
               </div>
               <div className="text-gray-400 text-sm mt-1">Services Available</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
-                {marketplaceItems.length || "—"}
+                {marketplaceItems.length || "ΓÇö"}
               </div>
               <div className="text-gray-400 text-sm mt-1">Items for Sale</div>
             </div>
