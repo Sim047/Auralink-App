@@ -1652,68 +1652,89 @@ function onMyStatusUpdated(newStatus: any) {
         )}
       </main>
 
-      {/* ---------------- PROFILE MODAL ---------------- */}
+      {/* ---------------- PROFILE MODAL - MODERNIZED ---------------- */}
       {profileOpen && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 px-4"
-          style={{ background: "rgba(0,0,0,0.45)" }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setProfileOpen(false)}
         >
           <div
-            className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg p-6 w-full max-w-sm shadow-2xl"
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl w-full max-w-md overflow-hidden border border-cyan-500/30 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {profileLoading ? (
-              <div className="text-center p-8">Loading…</div>
+              <div className="p-12 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400"></div>
+                <p className="text-gray-400 mt-4">Loading profile...</p>
+              </div>
             ) : profileUser ? (
               <>
-                <div className="flex flex-col items-center gap-3">
+                {/* Header with gradient */}
+                <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-6 text-center">
                   <Avatar
                     src={makeAvatarUrl(profileUser.avatar)}
-                    className="w-20 h-20 rounded-md object-cover"
+                    className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white/20 shadow-xl"
                     alt={profileUser.username || "User"}
                   />
-                  <div className="text-lg font-semibold">
+                  <h2 className="text-2xl font-bold text-white mt-4">
                     {profileUser.username}
-                  </div>
-                  <div className="text-xs opacity-70">
+                  </h2>
+                  <p className="text-cyan-100 text-sm mt-1">
                     {profileUser.email}
-                  </div>
+                  </p>
                 </div>
 
-                <div className="flex justify-around mt-4 text-center">
-                  <div>
-                    <div className="text-xs opacity-70">Followers</div>
-                    <div className="font-semibold">
-                      {profileFollowersCount ?? "—"}
+                {/* Stats Section */}
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/5 backdrop-blur rounded-xl p-4 text-center hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-cyan-400">
+                        {profileFollowersCount ?? 0}
+                      </div>
+                      <div className="text-gray-400 text-sm mt-1">Followers</div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur rounded-xl p-4 text-center hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-purple-400">
+                        {profileFollowingCount ?? 0}
+                      </div>
+                      <div className="text-gray-400 text-sm mt-1">Following</div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs opacity-70">Following</div>
-                    <div className="font-semibold">
-                      {profileFollowingCount ?? "—"}
+
+                  {/* Action Buttons */}
+                  {profileUser._id === user?._id ? (
+                    <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4 text-center">
+                      <p className="text-cyan-400 text-sm">
+                        This is your profile
+                      </p>
                     </div>
-                  </div>
-                </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Follow/Unfollow Button */}
+                      <button
+                        onClick={toggleFollowProfile}
+                        className={`w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg ${
+                          profileIsFollowed
+                            ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+                            : "bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+                        }`}
+                      >
+                        {profileIsFollowed ? "✓ Following" : "+ Follow"}
+                      </button>
 
-                <div className="mt-6 flex gap-3 justify-center">
-                  <button className="btn" onClick={messageFromProfile}>
-                    Message
-                  </button>
-
-                  {profileUser._id !== user?._id && (
-                    <button
-                      className="px-3 py-2 border rounded-md"
-                      onClick={toggleFollowProfile}
-                    >
-                      {profileIsFollowed ? "Unfollow" : "Follow"}
-                    </button>
+                      {/* Message Button */}
+                      <button
+                        onClick={messageFromProfile}
+                        className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition-all"
+                      >
+                        💬 Message
+                      </button>
+                    </div>
                   )}
-                </div>
 
-                <div className="mt-4 text-center">
+                  {/* Close Button */}
                   <button
-                    className="text-xs opacity-60"
+                    className="w-full text-center text-sm text-gray-400 hover:text-white transition-colors py-2"
                     onClick={() => setProfileOpen(false)}
                   >
                     Close
@@ -1721,7 +1742,16 @@ function onMyStatusUpdated(newStatus: any) {
                 </div>
               </>
             ) : (
-              <div className="text-center p-6">Profile not available</div>
+              <div className="p-12 text-center">
+                <div className="text-red-400 text-5xl mb-4">⚠️</div>
+                <p className="text-gray-300">Profile not available</p>
+                <button
+                  onClick={() => setProfileOpen(false)}
+                  className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             )}
           </div>
         </div>
