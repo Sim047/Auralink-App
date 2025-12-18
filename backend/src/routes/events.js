@@ -24,7 +24,9 @@ router.get("/my/created", auth, async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user.id })
       .sort({ startDate: -1 })
-      .lean();
+      .populate("organizer", "username avatar")
+      .populate("participants", "username avatar email")
+      .populate("joinRequests.user", "username avatar email");
     res.json({ events });
   } catch (err) {
     console.error("Get my created events error:", err);
@@ -37,7 +39,9 @@ router.get("/my/joined", auth, async (req, res) => {
   try {
     const events = await Event.find({ participants: req.user.id })
       .sort({ startDate: -1 })
-      .lean();
+      .populate("organizer", "username avatar")
+      .populate("participants", "username avatar email")
+      .populate("joinRequests.user", "username avatar email");
     res.json({ events });
   } catch (err) {
     console.error("Get my joined events error:", err);
@@ -53,7 +57,9 @@ router.get("/my/pending", auth, async (req, res) => {
       "joinRequests.status": "pending",
     })
       .sort({ startDate: -1 })
-      .lean();
+      .populate("organizer", "username avatar")
+      .populate("participants", "username avatar email")
+      .populate("joinRequests.user", "username avatar email");
     res.json({ events });
   } catch (err) {
     console.error("Get my pending events error:", err);

@@ -519,7 +519,15 @@ export default function MyEvents({ token }: any) {
                       
                       {/* PROMINENT MANAGE PARTICIPANTS BUTTON */}
                       <button
-                        onClick={() => setParticipantsModalEvent(event)}
+                        onClick={async () => {
+                          try {
+                            const resp = await axios.get(`${API}/api/events/${event._id}`);
+                            setParticipantsModalEvent(resp.data);
+                          } catch (e) {
+                            console.error("[MyEvents] Failed to fetch event for participants modal, using existing data:", e);
+                            setParticipantsModalEvent(event);
+                          }
+                        }}
                         className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
                       >
                         <Users className="w-4 h-4" />
