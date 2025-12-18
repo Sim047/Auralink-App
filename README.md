@@ -378,6 +378,13 @@ Auralink/
 │   │   └── main.tsx
 │   ├── package.json
 │   └── .env                      # Environment variables
+├── App/                          # Expo React Native mobile app (canonical)
+│   ├── App.tsx
+│   ├── app.json
+│   ├── src/
+│   │   ├── api.ts               # Axios base using EXPO_PUBLIC_* env
+│   │   └── socket.ts            # Socket.IO client
+│   └── package.json
 ├── CLOUDINARY_SETUP.md           # Cloudinary setup guide
 ├── README.md
 └── vercel.json                   # Vercel deployment config
@@ -398,6 +405,16 @@ Auralink/
    - `MONGO_URI`
    - `JWT_SECRET`
    - `FRONTEND_URL` (comma-separated for multiple domains)
+
+### Mobile (Expo)
+1. Use the `App/` folder as the mobile project.
+2. Configure environment before running (PowerShell example):
+  - `$env:EXPO_PUBLIC_API_URL = "https://your-backend-url/api"`
+  - `$env:EXPO_PUBLIC_API_BASE = "https://your-backend-url"`
+3. Run from `App/`:
+  - `npm install`
+  - `npx expo start`
+4. Optionally set `extra.apiUrl`/`extra.apiBase` in `App/app.json`.
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
