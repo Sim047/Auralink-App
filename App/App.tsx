@@ -3,6 +3,9 @@ import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, FlatList, Touc
 import Constants from 'expo-constants';
 import { api } from './src/api';
 import { socket } from './src/socket';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { setToken as persistToken, getToken as readToken, removeToken } from './src/storage';
 
 interface Event {
   _id: string;
@@ -12,40 +15,64 @@ interface Event {
   participants?: any[];
 }
 
-export default function App() {
-  const [token, setToken] = useState<string>('');
-  const [loggedIn, setLoggedIn] = useState(false);
+const Stack = createNativeStackNavigator();
+
+function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [status, setStatus] = useState<string>('');
+
+  const doLogin = async () => {
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      const t = res.data.token;
+      await persistToken(t);
+      navigation.replace('Discover');
+    } catch (e: any) {
+      setStatus(e.response?.data?.error || e.message);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Auralink Expo App</Text>
+      <Text style={styles.label}>Email</Text>
+      <TextInput style={styles.input} autoCapitalize='none' value={email} onChangeText={setEmail} />
+      <Text style={styles.label}>Password</Text>
+      <TextInput style={styles.input} secureTextEntry value={password} onChangeText={setPassword} />
+      <View style={{ marginTop: 12 }}>
+        <Button title='Login' onPress={doLogin} />
+      </View>
+      {!!status && <Text style={styles.status}>{status}</Text>}
+      <Text style={styles.env}>API: {Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL}</Text>
+    </SafeAreaView>
+  );
+}
+
+function DiscoverScreen({ navigation }: any) {
   const [events, setEvents] = useState<Event[]>([]);
   const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
-    if (loggedIn) {
+    const init = async () => {
+      const token = await readToken();
+      if (!token) {
+        navigation.replace('Login');
+        return;
+      }
       fetchEvents();
       socket.connect();
       socket.on('participant_joined', (payload: any) => {
         setStatus(`Participant joined: ${payload.participantId}`);
         fetchEvents();
       });
-    }
+    };
+    init();
     return () => {
       socket.off('participant_joined');
       socket.disconnect();
     };
-  }, [loggedIn]);
-
-  const doLogin = async () => {
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      const t = res.data.token;
-      setToken(t);
-      api.defaults.headers.common['Authorization'] = `Bearer ${t}`;
-      setLoggedIn(true);
-    } catch (e: any) {
-      setStatus(e.response?.data?.error || e.message);
-    }
-  };
+  }, []);
 
   const fetchEvents = async () => {
     try {
@@ -66,26 +93,17 @@ export default function App() {
     }
   };
 
-  if (!loggedIn) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Auralink Expo App</Text>
-        <Text style={styles.label}>Email</Text>
-        <TextInput style={styles.input} autoCapitalize='none' value={email} onChangeText={setEmail} />
-        <Text style={styles.label}>Password</Text>
-        <TextInput style={styles.input} secureTextEntry value={password} onChangeText={setPassword} />
-        <View style={{ marginTop: 12 }}>
-          <Button title='Login' onPress={doLogin} />
-        </View>
-        {!!status && <Text style={styles.status}>{status}</Text>}
-        <Text style={styles.env}>API: {Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL}</Text>
-      </SafeAreaView>
-    );
-  }
+  const logout = async () => {
+    await removeToken();
+    navigation.replace('Login');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Discover Events</Text>
+      <View style={{ marginBottom: 10 }}>
+        <Button title='Logout' onPress={logout} />
+      </View>
       {!!status && <Text style={styles.status}>{status}</Text>}
       <FlatList
         data={events}
@@ -102,6 +120,37 @@ export default function App() {
         )}
       />
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  const [bootChecked, setBootChecked] = useState(false);
+  const [initialRoute, setInitialRoute] = useState<'Login' | 'Discover'>('Login');
+
+  useEffect(() => {
+    const check = async () => {
+      const token = await readToken();
+      setInitialRoute(token ? 'Discover' : 'Login');
+      setBootChecked(true);
+    };
+    check();
+  }, []);
+
+  if (!bootChecked) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>Loading…</Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName={initialRoute}>
+        <Stack.Screen name='Login' component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name='Discover' component={DiscoverScreen} options={{ title: 'Auralink' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
