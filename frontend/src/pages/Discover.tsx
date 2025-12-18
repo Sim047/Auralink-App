@@ -1,4 +1,9 @@
-﻿import React, { useEffect, useState } from "react";
+﻿// Payment flow removed; no modal used currently
+// Payment modal removed
+  // Payment removed: proceed directly
+  // Payment flow removed
+          {/* Payment flow removed */}
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Calendar,
@@ -34,7 +39,7 @@ import ProductDetailModal from "../components/ProductDetailModal";
 import EventDetailModal from "../components/EventDetailModal";
 import EventParticipantsModal from "../components/EventParticipantsModal";
 import NotificationToast from "../components/NotificationToast";
-import PaymentTransactionModal from "../components/PaymentTransactionModal";
+ 
 
 dayjs.extend(relativeTime);
 
@@ -191,10 +196,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [participantsModalEvent, setParticipantsModalEvent] = useState<Event | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
-  const [paymentModalData, setPaymentModalData] = useState<{
-    show: boolean;
-    event: Event | null;
-  }>({ show: false, event: null });
+  
 
   // In-flight guards to prevent duplicate clicks
   const [joiningEvent, setJoiningEvent] = useState<InFlightMap>({});
@@ -268,25 +270,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       safeLog("[Discover] === JOIN EVENT START ===");
       safeLog("[Discover] Event ID:", eventId);
 
-      // Find the event to check if it's paid
-      const event = events.find(e => e._id === eventId) || selectedEvent;
-      safeLog("[Discover] Event found:", event);
-      safeLog("[Discover] Event pricing:", event?.pricing);
-      safeLog("[Discover] Is paid event?", event?.pricing?.type === "paid");
-
-      // Align with backend: treat as paid only when type is 'paid' and amount > 0
-      const isPaidEvent = !!event && (
-        event.pricing?.type === "paid" && Number(event.pricing?.amount) > 0
-      );
-
-      if (isPaidEvent) {
-        setPaymentModalData({ show: true, event });
-        // Clear in-flight state since we didn't call the API yet
-        finishAction(setJoiningEvent, eventId);
-        return; // Wait for modal submission
-      }
-
-      // Free event - proceed directly
+      // Proceed directly (payment flow removed)
       const response = await axios.post(
         `${API_URL}/events/${eventId}/join`,
         {},
@@ -342,77 +326,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     }
   };
 
-  const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
-    if (!paymentModalData.event) return;
-
-    try {
-      safeLog('[Discover] API_URL:', API_URL);
-      safeLog('[Discover] Auth token present (first 8 chars):', token ? token.slice(0,8) : 'no-token');
-      const response = await axios.post(
-        `${API_URL}/events/${paymentModalData.event._id}/join`,
-        {
-          transactionCode,
-          transactionDetails,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      safeLog("[Discover] Join paid event response:", response.data);
-
-      // Close payment modal
-      setPaymentModalData({ show: false, event: null });
-
-      // Show success notification
-      const requiresApproval = response.data.requiresApproval;
-      setNotification({
-        message: requiresApproval
-          ? "Join request submitted! The organizer will verify your payment and approve your request."
-          : "Successfully joined event!",
-        type: "success",
-      });
-
-      // Optimistically update if organizer doesn't require approval
-      if (!requiresApproval) {
-        setEvents((prev) => prev.map((ev) => {
-          if (ev._id !== paymentModalData.event!._id) return ev;
-          const already = (ev.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
-          if (already) return ev;
-          return { ...ev, participants: [...(ev.participants || []), currentUser] } as any;
-        }));
-      }
-
-      // Background refresh
-      fetchEvents();
-
-      // Update selected event if modal is open
-      if (selectedEvent && paymentModalData.event && selectedEvent._id === paymentModalData.event._id) {
-        if (!requiresApproval) {
-          const already = (selectedEvent.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
-          if (!already) {
-            setSelectedEvent({ ...selectedEvent, participants: [...(selectedEvent.participants || []), currentUser] } as any);
-          }
-        }
-        try {
-          const updatedEvent = await axios.get(`${API_URL}/events/${paymentModalData.event._id}`);
-          setSelectedEvent(updatedEvent.data);
-        } catch (err) {
-          console.error("Failed to refresh event details:", err);
-        }
-      }
-    } catch (error: any) {
-      // Close modal and show error
-      setPaymentModalData({ show: false, event: null });
-      setNotification({
-        message: getApiErrorMessage(error),
-        type: "error",
-      });
-    }
-  };
-
-  const handlePaymentCancel = () => {
-    safeLog("[Discover] Payment modal cancelled");
-    setPaymentModalData({ show: false, event: null });
-  };
+  
 
   // Ensure we display fully populated event (participants with usernames)
   const openEventDetails = async (eventId: string) => {
@@ -1250,14 +1164,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             />
           )}
 
-          {/* Payment Transaction Modal */}
-          {paymentModalData.show && paymentModalData.event && (
-            <PaymentTransactionModal
-              event={paymentModalData.event}
-              onSubmit={handlePaymentSubmit}
-              onCancel={() => setPaymentModalData({ show: false, event: null })}
-            />
-          )}
+          {/* Payment flow removed */}
 
           {/* Notification Toast */}
           {notification && (

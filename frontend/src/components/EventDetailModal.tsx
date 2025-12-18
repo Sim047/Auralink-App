@@ -82,6 +82,7 @@ export default function EventDetailModal({
                   {event.skillLevel}
                 </span>
               )}
+              {/* Price can still display if desired; payment flow removed */}
               {(event.pricing?.amount && event.pricing.amount > 0) && (
                 <span className="bg-green-500/30 px-3 py-1 rounded-full text-sm font-semibold">
                   {event.pricing?.currency || "$"} {event.pricing?.amount}
@@ -216,17 +217,7 @@ export default function EventDetailModal({
               </div>
             )}
 
-            {event.pricing?.type === "paid" && event.pricing.paymentInstructions && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h4 className="text-blue-400 font-semibold mb-2 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Payment Instructions
-                </h4>
-                <p className="text-gray-300 text-sm whitespace-pre-wrap">
-                  {event.pricing.paymentInstructions}
-                </p>
-              </div>
-            )}
+            {/* Payment Instructions removed with payment flow */}
           </div>
 
           {/* Participants Section - COLLAPSIBLE */}
