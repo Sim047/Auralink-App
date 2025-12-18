@@ -382,6 +382,18 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     setPaymentModalData({ show: false, event: null });
   };
 
+  // Ensure we display fully populated event (participants with usernames)
+  const openEventDetails = async (eventId: string) => {
+    try {
+      const resp = await axios.get(`${API_URL}/events/${eventId}`);
+      setSelectedEvent(resp.data);
+    } catch (e) {
+      console.error("[Discover] Failed to fetch event details, falling back to cached event:", e);
+      const fallback = events.find(e => e._id === eventId) || null;
+      setSelectedEvent(fallback as any);
+    }
+  };
+
   const handleApproveRequest = async (eventId: string, requestId: string) => {
     if (!token) {
       setNotification({ message: "Please log in to manage requests", type: "warning" });
@@ -769,7 +781,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               {events.map((event) => (
                 <div
                   key={event._id}
-                  onClick={() => setSelectedEvent(event)}
+                  onClick={() => openEventDetails(event._id)}
                   className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-cyan-400/50 transition-all hover:scale-105 cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -840,8 +852,14 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               onJoin={handleJoinEvent}
               onMessage={handleMessageUser}
               onViewProfile={onViewProfile}
-              onViewParticipants={(event) => {
-                setParticipantsModalEvent(event);
+              onViewParticipants={async (evt) => {
+                try {
+                  const resp = await axios.get(`${API_URL}/events/${evt._id}`);
+                  setParticipantsModalEvent(resp.data);
+                } catch (e) {
+                  console.error("[Discover] Failed to fetch event for participants modal, using passed event:", e);
+                  setParticipantsModalEvent(evt);
+                }
                 setSelectedEvent(null);
               }}
               currentUserId={currentUser._id}
