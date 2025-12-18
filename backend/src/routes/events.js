@@ -8,7 +8,11 @@ const router = express.Router();
 // GET /api/events - list events (simple)
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find({ status: "published" })
+    const q = { status: "published" };
+    if (req.query.sport && String(req.query.sport).trim()) {
+      q.sport = req.query.sport;
+    }
+    const events = await Event.find(q)
       .populate("organizer", "username avatar")
       .sort({ startDate: 1 })
       .limit(50);
@@ -31,6 +35,52 @@ router.get("/my/created", auth, async (req, res) => {
   } catch (err) {
     console.error("Get my created events error:", err);
     res.status(500).json({ error: "Failed to fetch created events" });
+  }
+});
+
+// PUT /api/events/:id - update event (organizer only)
+router.put("/:id", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (String(event.organizer) !== String(req.user.id)) {
+      return res.status(403).json({ error: "Only organizer can update event" });
+    }
+
+    const allowed = [
+      "title","description","sport","startDate","time","location",
+      "requiresApproval","status","image","skillLevel",
+      "capacity","pricing"
+    ];
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) {
+        if (key === 'capacity' && typeof req.body.capacity === 'object') {
+          event.capacity = event.capacity || {};
+          if (req.body.capacity.max !== undefined) event.capacity.max = req.body.capacity.max;
+          if (req.body.capacity.current !== undefined) event.capacity.current = req.body.capacity.current;
+        } else if (key === 'pricing' && typeof req.body.pricing === 'object') {
+          event.pricing = event.pricing || {};
+          if (req.body.pricing.type !== undefined) event.pricing.type = req.body.pricing.type;
+          if (req.body.pricing.amount !== undefined) event.pricing.amount = req.body.pricing.amount;
+          if (req.body.pricing.currency !== undefined) event.pricing.currency = req.body.pricing.currency;
+          if (req.body.pricing.paymentInstructions !== undefined) event.pricing.paymentInstructions = req.body.pricing.paymentInstructions;
+        } else {
+          event[key] = req.body[key];
+        }
+      }
+    }
+
+    await event.save();
+    const populated = await Event.findById(event._id)
+      .populate("organizer", "username avatar")
+      .populate("participants", "username avatar email")
+      .populate("joinRequests.user", "username avatar email");
+
+    res.json(populated);
+  } catch (err) {
+    console.error("Update event error:", err);
+    res.status(500).json({ error: "Failed to update event" });
   }
 });
 
