@@ -299,77 +299,6 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       safeLog("[Discover] Join event response:", response.data);
-  const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
-    if (!paymentModalData.event) return;
-
-    try {
-      safeLog('[Discover] API_URL:', API_URL);
-      safeLog('[Discover] Auth token present (first 8 chars):', token ? token.slice(0,8) : 'no-token');
-      const response = await axios.post(
-        `${API_URL}/events/${paymentModalData.event._id}/join`,
-        {
-          transactionCode,
-          transactionDetails,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      safeLog("[Discover] Join paid event response:", response.data);
-
-      // Close payment modal
-      setPaymentModalData({ show: false, event: null });
-
-      // Show success notification
-      const requiresApproval = response.data.requiresApproval;
-      setNotification({
-        message: requiresApproval
-          ? "Join request submitted! The organizer will verify your payment and approve your request."
-          : "Successfully joined event!",
-        type: "success",
-      });
-
-      // Optimistically update if organizer doesn't require approval
-      if (!requiresApproval) {
-        setEvents((prev) => prev.map((ev) => {
-          if (ev._id !== paymentModalData.event!._id) return ev;
-          const already = (ev.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
-          if (already) return ev;
-          return { ...ev, participants: [...(ev.participants || []), currentUser] } as any;
-        }));
-      }
-
-      // Background refresh
-      fetchEvents();
-
-      // Update selected event if modal is open
-      if (selectedEvent && paymentModalData.event && selectedEvent._id === paymentModalData.event._id) {
-        if (!requiresApproval) {
-          const already = (selectedEvent.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
-          if (!already) {
-            setSelectedEvent({ ...selectedEvent, participants: [...(selectedEvent.participants || []), currentUser] } as any);
-          }
-        }
-        try {
-          const updatedEvent = await axios.get(`${API_URL}/events/${paymentModalData.event._id}`);
-          setSelectedEvent(updatedEvent.data);
-        } catch (err) {
-          console.error("Failed to refresh event details:", err);
-        }
-      }
-    } catch (error: any) {
-      // Close modal and show error
-      setPaymentModalData({ show: false, event: null });
-      setNotification({
-        message: getApiErrorMessage(error),
-        type: "error",
-      });
-    }
-  };
-
-  const handlePaymentCancel = () => {
-    safeLog("[Discover] Payment modal cancelled");
-    setPaymentModalData({ show: false, event: null });
-  };
       // Show success message with proper notification
       const message = response.data.message || "Successfully joined event!";
       const requiresApproval = response.data.requiresApproval;
@@ -416,6 +345,72 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     } finally {
       finishAction(setJoiningEvent, eventId);
     }
+  };
+
+  const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
+    if (!paymentModalData.event) return;
+
+    try {
+      safeLog('[Discover] API_URL:', API_URL);
+      safeLog('[Discover] Auth token present (first 8 chars):', token ? token.slice(0,8) : 'no-token');
+      const response = await axios.post(
+        `${API_URL}/events/${paymentModalData.event._id}/join`,
+        {
+          transactionCode,
+          transactionDetails,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      safeLog("[Discover] Join paid event response:", response.data);
+
+      setPaymentModalData({ show: false, event: null });
+
+      const requiresApproval = response.data.requiresApproval;
+      setNotification({
+        message: requiresApproval
+          ? "Join request submitted! The organizer will verify your payment and approve your request."
+          : "Successfully joined event!",
+        type: "success",
+      });
+
+      if (!requiresApproval) {
+        setEvents((prev) => prev.map((ev) => {
+          if (ev._id !== paymentModalData.event!._id) return ev;
+          const already = (ev.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
+          if (already) return ev;
+          return { ...ev, participants: [...(ev.participants || []), currentUser] } as any;
+        }));
+      }
+
+      fetchEvents();
+
+      if (selectedEvent && paymentModalData.event && selectedEvent._id === paymentModalData.event._id) {
+        if (!requiresApproval) {
+          const already = (selectedEvent.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
+          if (!already) {
+            setSelectedEvent({ ...selectedEvent, participants: [...(selectedEvent.participants || []), currentUser] } as any);
+          }
+        }
+        try {
+          const updatedEvent = await axios.get(`${API_URL}/events/${paymentModalData.event._id}`);
+          setSelectedEvent(updatedEvent.data);
+        } catch (err) {
+          console.error("Failed to refresh event details:", err);
+        }
+      }
+    } catch (error: any) {
+      setPaymentModalData({ show: false, event: null });
+      setNotification({
+        message: getApiErrorMessage(error),
+        type: "error",
+      });
+    }
+  };
+
+  const handlePaymentCancel = () => {
+    safeLog("[Discover] Payment modal cancelled");
+    setPaymentModalData({ show: false, event: null });
   };
 
   
