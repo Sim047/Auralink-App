@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Auralink Expo App",
+    "slug": "auralink-expo-app",
+    "scheme": "auralink",
+    "version": "0.1.0",
+    "sdkVersion": "51.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android", "web"],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "updates": { "fallbackToCacheTimeout": 0 },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#0f172a" } },
+    "extra": {
+      "apiUrl": "",
+      "apiBase": "",
+      "eas": { "projectId": "00000000-0000-0000-0000-000000000000" }
+    }
+  }
+}
