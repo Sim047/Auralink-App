@@ -409,7 +409,7 @@ Auralink/
 ### Mobile (Expo)
 1. Use the `App/` folder as the mobile project.
 2. Configure environment before running (PowerShell example):
-  - `$env:EXPO_PUBLIC_API_URL = "https://your-backend-url/api"`
+  - `$env:EXPO_PUBLIC_API_URL = "https://auralink-app-production.up.railway.app/api"`
   - `$env:EXPO_PUBLIC_API_BASE = "https://your-backend-url"`
 3. Run from `App/`:
   - `npm install`
@@ -447,6 +447,19 @@ Found a bug or have an idea? Open an issue on [GitHub Issues](https://github.com
 - **Tailwind CSS** - Utility-first CSS framework
 - **Vercel** - Frontend hosting and deployment
 - **Railway** - Backend hosting (moved from Render)
+
+### Google Login Setup
+
+- Backend envs (Railway):
+  - `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_IDS` (comma-separated for multiple) — set to your Google OAuth Web client ID(s)
+  - `JWT_SECRET` — unchanged
+
+- Frontend env (Vercel):
+  - `VITE_GOOGLE_CLIENT_ID` — same Web client ID
+
+- Flow:
+  - Frontend obtains Google ID token via Google Identity Services and POSTs to `/api/auth/google`.
+  - Backend verifies token, creates/updates user, and returns a JWT.
 - **MongoDB Atlas** - Cloud database services
 - **Cloudinary** - Image hosting and management
 - **React** - UI library
