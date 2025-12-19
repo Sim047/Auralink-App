@@ -25,6 +25,7 @@ import MyEvents from "./pages/MyEvents";
 import Posts from "./pages/Posts";
 import Avatar from "./components/Avatar";
 import Sidebar from "./components/Sidebar";
+import AssistantWidget from "./components/AssistantWidget";
 import logo from "./assets/logo.png";
 
 dayjs.extend(localizedFormat);
@@ -1826,6 +1827,8 @@ function onMyStatusUpdated(newStatus: any) {
           </div>
         </div>
       )}
+      {/* AI Assistant Widget */}
+      <AssistantWidget token={token} user={user as any} />
     </div>
   );
 }
