@@ -23,8 +23,8 @@
     },
     "android": {},
     "extra": {
-      "apiUrl": "https://auralink-app-production.up.railway.app/api",
-      "apiBase": "https://auralink-app-production.up.railway.app",
+      "apiUrl": "https://auralink-app-2u3p.vercel.app/api",
+      "apiBase": "https://auralink-app-2u3p.vercel.app",
       "webUrl": "https://auralink-app-2u3p.vercel.app",
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
