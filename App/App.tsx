@@ -28,7 +28,7 @@ function LoginScreen({ navigation }: any) {
       const res = await api.post('/auth/login', { email, password });
       const t = res.data.token;
       await persistToken(t);
-      navigation.replace('Discover');
+      navigation.replace('Web');
     } catch (e: any) {
       setStatus(e.response?.data?.error || e.message);
     }
@@ -158,8 +158,26 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName={initialRoute}>
         <Stack.Screen name='Login' component={LoginScreen} options={{ headerShown: false }} />
-        <Stack.Screen name='Web' component={WebScreen} options={{ title: 'Auralink' }} />
-        <Stack.Screen name='Discover' component={DiscoverScreen} options={{ title: 'Auralink (Native)" }} />
+        <Stack.Screen
+          name='Web'
+          component={WebScreen}
+          options={({ navigation }) => ({
+            title: 'Auralink',
+            headerRight: () => (
+              <Button title='Native' onPress={() => navigation.navigate('Discover')} />
+            )
+          })}
+        />
+        <Stack.Screen
+          name='Discover'
+          component={DiscoverScreen}
+          options={({ navigation }) => ({
+            title: 'Auralink (Native)',
+            headerRight: () => (
+              <Button title='Website' onPress={() => navigation.navigate('Web')} />
+            )
+          })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
