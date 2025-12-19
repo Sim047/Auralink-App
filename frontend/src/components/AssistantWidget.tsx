@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
-import { MessageCircle, X, Send, Search as SearchIcon, Bot, EyeOff, Eye } from "lucide-react";
+import { MessageCircle, X, Send, Search as SearchIcon, Bot, EyeOff } from "lucide-react";
 
 interface AssistantWidgetProps {
   token: string | null;
@@ -98,22 +98,7 @@ export default function AssistantWidget({ token, user, currentView, view }: Assi
   const bottomClass = 'bottom-6';
   const positionClass = activeView === 'posts' ? 'left-6' : 'right-20 md:right-6';
 
-  if (hidden) {
-    return (
-      <div className={`fixed ${bottomClass} ${positionClass} z-40`}>
-        <button
-          onClick={() => {
-            setHidden(false);
-            try { localStorage.setItem('auralink.assistantHidden', 'false'); } catch {}
-          }}
-          className="p-3 rounded-full shadow-lg themed-card hover:shadow-xl transition-all"
-          aria-label="Show assistant"
-        >
-          <Bot className="w-6 h-6 text-accent" />
-        </button>
-      </div>
-    );
-  }
+  if (hidden) return null;
   return (
     <div className={`fixed ${bottomClass} ${positionClass} z-40`}>
       {!open ? (
