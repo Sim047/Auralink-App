@@ -45,6 +45,13 @@
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
   --btn-text: #0f172a;
+  /* Subtle accent tokens for UI touches */
+  --accent-cyan: #22d3ee;
+  --accent-cyan-muted: rgba(34, 211, 238, 0.10);
+  --accent-violet: #7c3aed;
+  --accent-violet-muted: rgba(124, 58, 237, 0.10);
+  --accent-amber: #f59e0b;
+  --accent-amber-muted: rgba(245, 158, 11, 0.12);
   
   --input-bg: #f8fafc;
   --input-border: #cbd5e1;
@@ -71,6 +78,13 @@
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
   --btn-text: #0f172a;
+  /* Subtle accent tokens for UI touches */
+  --accent-cyan: #22d3ee;
+  --accent-cyan-muted: rgba(34, 211, 238, 0.12);
+  --accent-violet: #7c3aed;
+  --accent-violet-muted: rgba(124, 58, 237, 0.12);
+  --accent-amber: #f59e0b;
+  --accent-amber-muted: rgba(245, 158, 11, 0.14);
   
   --input-bg: #1e293b;
   --input-border: rgba(148, 163, 184, 0.2);
