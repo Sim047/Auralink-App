@@ -82,12 +82,12 @@ export default function SportEvents({ sport, token, onBack }: any) {
 
         {/* Events Grid */}
         {events.length === 0 ? (
-          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-12 border border-gray-200 dark:border-gray-800 text-center">
+          <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <div className="max-w-md mx-auto">
               <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-10 h-10 text-slate-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>
                 No Events Found
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -100,7 +100,8 @@ export default function SportEvents({ sport, token, onBack }: any) {
             {events.map((event) => (
               <div
                 key={event._id}
-                className="bg-white dark:bg-[#0f172a] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300"
+                className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
               >
                 <div className="bg-gradient-to-r from-teal-500 to-cyan-500 p-6">
                   <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">

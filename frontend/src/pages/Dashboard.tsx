@@ -500,7 +500,8 @@ export default function Dashboard({ token, onNavigate }: any) {
           {/* My Join Requests - Clickable */}
           <button
             onClick={() => setViewMode('myRequests')}
-            className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border-2 border-blue-200 dark:border-blue-800 hover:shadow-xl hover:scale-105 hover:border-accent/40 transition-all duration-300 text-left group relative overflow-hidden"
+            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
+            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
@@ -518,7 +519,8 @@ export default function Dashboard({ token, onNavigate }: any) {
           {/* Pending Approvals - Clickable */}
           <button
             onClick={() => setViewMode('approvals')}
-            className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border-2 border-orange-200 dark:border-orange-800 hover:shadow-xl hover:scale-105 hover:border-accent/40 transition-all duration-300 text-left group relative overflow-hidden"
+            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
+            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
@@ -536,7 +538,8 @@ export default function Dashboard({ token, onNavigate }: any) {
           {/* All Events - Clickable */}
           <button
             onClick={() => setViewMode('allEvents')}
-            className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border-2 border-purple-200 dark:border-purple-800 hover:shadow-xl hover:scale-105 hover:border-accent/40 transition-all duration-300 text-left group relative overflow-hidden"
+            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
+            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
@@ -554,7 +557,8 @@ export default function Dashboard({ token, onNavigate }: any) {
           {/* Notifications - Clickable */}
           <button
             onClick={() => setViewMode('notifications')}
-            className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border-2 border-orange-200 dark:border-red-800 hover:shadow-xl hover:scale-105 hover:border-accent/40 transition-all duration-300 text-left group relative overflow-hidden"
+            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
+            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
@@ -601,7 +605,7 @@ export default function Dashboard({ token, onNavigate }: any) {
           </button>
 
           {/* Total Bookings */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all duration-300">
+          <div className="rounded-2xl p-6 hover:shadow-lg transition-all duration-300" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Bookings</p>
@@ -612,7 +616,7 @@ export default function Dashboard({ token, onNavigate }: any) {
           </div>
 
           {/* Confirmed Bookings */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all duration-300">
+          <div className="rounded-2xl p-6 hover:shadow-lg transition-all duration-300" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Confirmed</p>
@@ -691,7 +695,7 @@ export default function Dashboard({ token, onNavigate }: any) {
         {/* Community & Bookings section */}
         <div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 My Bookings
@@ -748,7 +752,7 @@ export default function Dashboard({ token, onNavigate }: any) {
           </div>
 
           {/* Upcoming Events */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Community Events

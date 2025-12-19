@@ -76,7 +76,8 @@ export default function FollowersList({
           {followers.map((u) => (
             <div
               key={u._id}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all min-h-[280px]"
+              className="rounded-xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all min-h-[280px]"
+              style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}
             >
               <Avatar
                 src={avatarUrl(u)}
@@ -124,7 +125,8 @@ export default function FollowersList({
           {followers.map((u) => (
             <div
               key={u._id}
-              className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all flex-wrap sm:flex-nowrap"
+              className="flex items-center gap-3 p-4 rounded-xl hover:shadow-md transition-all flex-wrap sm:flex-nowrap"
+              style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}
             >
               <Avatar
                 src={avatarUrl(u)}

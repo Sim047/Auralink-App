@@ -37,7 +37,8 @@ export default function ProfileModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.85, opacity: 0 }}
           transition={{ type: "spring", stiffness: 140, damping: 14 }}
-          className="bg-white dark:bg-slate-900 shadow-xl w-[380px] rounded-xl p-7 border border-gray-200 dark:border-gray-700"
+          className="shadow-xl w-[380px] rounded-xl p-7"
+          style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}
         >
           {/* Avatar */}
           <div className="flex flex-col items-center">

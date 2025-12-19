@@ -119,9 +119,9 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#071029]">
+    <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div className="sticky top-0 z-10" style={{ background: 'var(--card)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -177,7 +177,7 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
         {loading ? (
           <div className={`grid ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"} gap-4`}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 animate-pulse">
+              <div key={i} className="rounded-2xl p-6 animate-pulse" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-full" />
                   <div className="flex-1">
@@ -230,7 +230,7 @@ function UserCard({
 }: any) {
   if (viewMode === "list") {
     return (
-      <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
+      <div className="rounded-2xl p-5 hover:shadow-xl transition-all duration-300 hover:scale-[1.01]" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <img
             src={avatarUrl}
@@ -292,7 +292,7 @@ function UserCard({
 
   // Grid view
   return (
-    <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02]">
+    <div className="rounded-2xl p-6 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02]" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
       <div className="flex flex-col items-center text-center">
         <img
           src={avatarUrl}

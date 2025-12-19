@@ -324,7 +324,7 @@ export default function MyEvents({ token }: any) {
         {/* Stats */}
         {activeTab === "events" ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Events</p>
@@ -336,7 +336,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Participants</p>
@@ -350,7 +350,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Events</p>
@@ -366,7 +366,7 @@ export default function MyEvents({ token }: any) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Services</p>
@@ -378,7 +378,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Services</p>
@@ -392,7 +392,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Avg. Rating</p>
@@ -416,14 +416,14 @@ export default function MyEvents({ token }: any) {
             return (
               <div>
                 <div className="mb-6">
-                  <div className="inline-flex bg-white dark:bg-[#0f172a] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                  <div className="inline-flex rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                     <button onClick={() => setEventsTab('organizing')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='organizing' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300'}`}>Organizing ({eventsCreated.length})</button>
                     <button onClick={() => setEventsTab('joined')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='joined' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300'}`}>Joined ({eventsJoined.length})</button>
                     <button onClick={() => setEventsTab('pending')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='pending' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300'}`}>Pending ({eventsPending.length})</button>
                   </div>
                 </div>
                 {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).length === 0 ? (
-                  <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-12 border border-gray-200 dark:border-gray-800 text-center">
+                  <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Calendar className="w-10 h-10 text-slate-500" />
@@ -448,7 +448,8 @@ export default function MyEvents({ token }: any) {
                     {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).map((event) => (
                       <div
                         key={event._id}
-                        className="bg-white dark:bg-[#0f172a] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300"
+                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
                       >
                         {/* Event Header */}
                         <div className="bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 p-6">
@@ -591,7 +592,7 @@ export default function MyEvents({ token }: any) {
               <>
                 {/* Services Tab Content */}
                 {services.length === 0 ? (
-                  <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-12 border border-gray-200 dark:border-gray-800 text-center">
+                  <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900 dark:to-pink-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Stethoscope className="w-10 h-10 text-purple-500" />
@@ -616,7 +617,8 @@ export default function MyEvents({ token }: any) {
                     {services.map((service) => (
                       <div
                         key={service._id}
-                        className="bg-white dark:bg-[#0f172a] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300"
+                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
                       >
                         {/* Service Header */}
                         <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
@@ -742,7 +744,7 @@ export default function MyEvents({ token }: any) {
               <>
                 {/* Products Tab Content */}
                 {products.length === 0 ? (
-                  <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-12 border border-gray-200 dark:border-gray-800 text-center">
+                  <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900 dark:to-emerald-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <ShoppingBag className="w-10 h-10 text-green-500" />
@@ -767,7 +769,8 @@ export default function MyEvents({ token }: any) {
                     {products.map((product) => (
                       <div
                         key={product._id}
-                        className="bg-white dark:bg-[#0f172a] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300"
+                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
                       >
                         {/* Product Header */}
                         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">

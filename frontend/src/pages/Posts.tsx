@@ -362,7 +362,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
         {loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 animate-pulse">
+              <div key={i} className="rounded-2xl p-6 animate-pulse" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}>
                 <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
               </div>
             ))}
@@ -378,7 +378,8 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="rounded-2xl shadow-md overflow-hidden"
+                style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}
               >
                 {/* Post Header */}
                 <div className="flex items-center justify-between p-4">
@@ -408,7 +409,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       <Menu.Button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
                         <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       </Menu.Button>
-                      <Menu.Items className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                      <Menu.Items className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-10" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}>
                         <Menu.Item>
                           {({ active }) => (
                             <button
@@ -818,7 +819,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       {/* Create Post Modal */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-lg">
+          <div className="rounded-2xl p-6 w-full max-w-lg" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create Post</h2>
               <button
