@@ -37,8 +37,7 @@ export default function MyEvents({ token }: any) {
   const [hideInactiveEvents, setHideInactiveEvents] = useState<boolean>(true);
   const [eventsCreated, setEventsCreated] = useState<any[]>([]);
   const [eventsJoined, setEventsJoined] = useState<any[]>([]);
-  const [eventsPending, setEventsPending] = useState<any[]>([]);
-  const [eventsTab, setEventsTab] = useState<'organizing' | 'joined' | 'pending'>('organizing');
+  const [eventsTab, setEventsTab] = useState<'organizing' | 'joined'>('organizing');
   const [services, setServices] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,14 +67,12 @@ export default function MyEvents({ token }: any) {
   async function loadMyEventsAll() {
     try {
       setLoading(true);
-      const [createdRes, joinedRes, pendingRes] = await Promise.all([
+      const [createdRes, joinedRes] = await Promise.all([
         axios.get(`${API}/api/events/my/created`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API}/api/events/my/joined`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/events/my/pending`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       setEventsCreated(createdRes.data.events || []);
       setEventsJoined(joinedRes.data.events || []);
-      setEventsPending(pendingRes.data.events || []);
     } catch (err) {
       console.error("Load my events error:", err);
     } finally {
@@ -116,7 +113,7 @@ export default function MyEvents({ token }: any) {
       });
       setEventsCreated((prev) => prev.filter((e) => e._id !== eventId));
       setEventsJoined((prev) => prev.filter((e) => e._id !== eventId));
-      setEventsPending((prev) => prev.filter((e) => e._id !== eventId));
+      // removed pending list; only created/joined are kept
     } catch (err: any) {
       alert(err.response?.data?.error || "Failed to delete event");
     } finally {
@@ -333,12 +330,12 @@ export default function MyEvents({ token }: any) {
 
         {/* Stats */}
         {activeTab === "events" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-theme-secondary mb-1">Total Events</p>
-                  <p className="text-3xl font-bold text-heading">{(eventsCreated.length + eventsJoined.length + eventsPending.length)}</p>
+                  <p className="text-3xl font-bold text-heading">{(eventsCreated.length + eventsJoined.length)}</p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl flex items-center justify-center">
                   <Trophy className="w-6 h-6 text-white" />
@@ -349,23 +346,9 @@ export default function MyEvents({ token }: any) {
             <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-theme-secondary mb-1">Total Participants</p>
-                  <p className="text-3xl font-bold text-heading">
-                    {[...eventsCreated, ...eventsJoined].reduce((sum, e) => sum + (e.capacity?.current || (e.participants?.length || 0)), 0)}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 themed-card">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm text-theme-secondary mb-1">Active Events</p>
                   <p className="text-3xl font-bold text-heading">
-                    {[...eventsCreated, ...eventsJoined, ...eventsPending].filter((e) => e.status === "published").length}
+                    {[...eventsCreated, ...eventsJoined].filter((e) => e.status === "published").length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
@@ -429,7 +412,6 @@ export default function MyEvents({ token }: any) {
                   <div className="inline-flex rounded-xl overflow-hidden themed-card">
                     <button onClick={() => setEventsTab('organizing')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='organizing' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Organizing ({eventsCreated.length})</button>
                     <button onClick={() => setEventsTab('joined')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='joined' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Joined ({eventsJoined.length})</button>
-                    <button onClick={() => setEventsTab('pending')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='pending' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Pending ({eventsPending.length})</button>
                   </div>
                   <div className="mt-3 flex items-center gap-3">
                     <label className="inline-flex items-center gap-2 text-sm text-theme-secondary">
@@ -443,7 +425,7 @@ export default function MyEvents({ token }: any) {
                     </label>
                   </div>
                 </div>
-                {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true).length === 0 ? (
+                {(eventsTab==='organizing' ? eventsCreated : eventsJoined).filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true).length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -466,7 +448,7 @@ export default function MyEvents({ token }: any) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending)
+                    {(eventsTab==='organizing' ? eventsCreated : eventsJoined)
                       .filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true)
                       .map((event) => (
                       <div
@@ -567,11 +549,7 @@ export default function MyEvents({ token }: any) {
                               >
                                 <Users className="w-4 h-4" />
                                 Manage Participants
-                                {event.joinRequests?.filter((r: any) => r.status === "pending").length > 0 && (
-                                  <span className="bg-yellow-500 text-black px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">
-                                    {event.joinRequests.filter((r: any) => r.status === "pending").length}
-                                  </span>
-                                )}
+                                {/* Pending join requests badge removed for a cleaner UI */}
                               </button>
                             </div>
 
