@@ -369,6 +369,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       alert("Please log in to join");
       return;
     }
+    const post = otherEvents.find((p) => p._id === postId) || selectedOther;
+    const title = (post && (post.title || post.caption)) ? (post.title || post.caption) : "this event";
+    const confirmJoin = window.confirm(`Do you want to join ${title}?`);
+    if (!confirmJoin) return;
     if (joiningOther[postId]) return;
     setJoiningOther((m) => ({ ...m, [postId]: true }));
     try {
@@ -409,6 +413,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       setNotification({ message: "Please log in to join events", type: "warning" });
       return;
     }
+
+    const ev = events.find(e => e._id === eventId) || selectedEvent;
+    const title = ev?.title ? ev.title : "this event";
+    const confirmJoin = window.confirm(`Do you want to join ${title}?`);
+    if (!confirmJoin) return;
 
     if (!startAction(joiningEvent, setJoiningEvent, eventId)) return;
 

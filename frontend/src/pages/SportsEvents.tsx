@@ -55,6 +55,10 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
     }
 
     const ev = events.find((e) => e._id === eventId) || selectedEvent;
+    const title = ev?.title ? ev.title : "this event";
+    const confirmJoin = window.confirm(`Do you want to join ${title}?`);
+    if (!confirmJoin) return;
+
     if (ev && ev.pricing?.type === "paid") {
       setPaymentModalData({ show: true, event: ev });
       return;
