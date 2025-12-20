@@ -163,20 +163,36 @@ export default function App() {
     const el = mainRef.current;
     if (!el) return;
     let last = el.scrollTop;
+    let ticking = false;
+    let lastEmit = 0;
+
+    const emitDirection = (current: number, diff: number) => {
+      const now = Date.now();
+      if (now - lastEmit < 60) return; // throttle event emission
+      // If near top, always emit 'up' to reveal toggle
+      const direction = current <= 12 ? "up" : diff > 0 ? "down" : "up";
+      try {
+        window.dispatchEvent(
+          new CustomEvent("auralink.scrollDirection", {
+            detail: { direction, scrollTop: current },
+          })
+        );
+      } catch {}
+      lastEmit = now;
+    };
 
     const onScroll = () => {
-      const current = el.scrollTop;
-      const diff = current - last;
-      if (Math.abs(diff) > 8) {
-        const direction = diff > 0 ? "down" : "up";
-        try {
-          window.dispatchEvent(
-            new CustomEvent("auralink.scrollDirection", {
-              detail: { direction, scrollTop: current },
-            })
-          );
-        } catch {}
-        last = current;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const current = el.scrollTop;
+          const diff = current - last;
+          if (Math.abs(diff) > 10) {
+            emitDirection(current, diff);
+            last = current;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

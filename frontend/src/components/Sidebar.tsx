@@ -83,17 +83,39 @@ export default function Sidebar({
 
   // Listen for scroll direction events from App and hide/show the mobile toggle
   useEffect(() => {
+    let showTimeout: any = null;
     const onScrollDirection = (e: Event) => {
       try {
         const detail = (e as CustomEvent).detail || {};
         const dir = detail.direction as 'up' | 'down';
         const top = Number(detail.scrollTop) || 0;
-        // Keep visible if menu is open; otherwise hide on downward scroll beyond a small threshold
-        setHideMobileToggle(!isMobileOpen && dir === 'down' && top > 20);
+        // Always show near very top
+        if (top <= 12) {
+          setHideMobileToggle(false);
+          return;
+        }
+        // If menu is open, keep visible regardless
+        if (isMobileOpen) {
+          setHideMobileToggle(false);
+          return;
+        }
+        // Hide on downward scroll beyond threshold, show on upward scroll
+        if (dir === 'down' && top > 24) {
+          setHideMobileToggle(true);
+          // optional: auto-show after brief idle
+          clearTimeout(showTimeout);
+          showTimeout = setTimeout(() => setHideMobileToggle(false), 1200);
+        } else {
+          clearTimeout(showTimeout);
+          setHideMobileToggle(false);
+        }
       } catch {}
     };
     window.addEventListener('auralink.scrollDirection', onScrollDirection as EventListener);
-    return () => window.removeEventListener('auralink.scrollDirection', onScrollDirection as EventListener);
+    return () => {
+      window.removeEventListener('auralink.scrollDirection', onScrollDirection as EventListener);
+      clearTimeout(showTimeout);
+    };
   }, [isMobileOpen]);
 
   async function loadUserStats() {
