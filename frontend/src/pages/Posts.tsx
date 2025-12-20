@@ -378,10 +378,11 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
             {posts.map((post) => (
               <div
                 key={post._id}
-                className="rounded-2xl shadow-md overflow-hidden themed-card"
+                className="rounded-2xl shadow-md themed-card"
+                style={{ overflow: 'visible' }}
               >
                 {/* Post Header */}
-                <div className="flex items-center justify-between p-4">
+                <div className="flex items-center justify-between p-4 relative z-10" style={{ overflow: 'visible' }}>
                   <div className="flex items-center gap-3">
                     <Avatar
                       src={makeAvatarUrl(post.author.avatar)}
@@ -408,7 +409,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       <Menu.Button className="p-2 hover:opacity-80 rounded-full themed-card">
                         <MoreVertical className="w-5 h-5 text-theme-secondary" />
                       </Menu.Button>
-                      <Menu.Items className="absolute right-0 mt-2 w-48 shadow-lg z-10 themed-menu">
+                      <Menu.Items className="absolute right-0 mt-2 w-48 shadow-lg z-20 themed-menu" style={{ overflow: 'visible' }}>
                         <Menu.Item>
                           {({ active }) => (
                             <button
