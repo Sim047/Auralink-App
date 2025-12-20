@@ -1620,16 +1620,16 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           {selectedOther && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedOther(null)} />
-              <div className="relative w-full max-w-2xl mx-4 rounded-2xl themed-card overflow-hidden">
+              <div className="relative w-full max-w-2xl mx-3 sm:mx-4 mt-14 mb-10 rounded-2xl themed-card overflow-hidden shadow-2xl">
                 {selectedOther.imageUrl && (
-                  <div className="h-48 w-full">
+                  <div className="w-full h-40 sm:h-48">
                     <img src={selectedOther.imageUrl} alt={selectedOther.title || selectedOther.caption || 'Event'} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <h2 className="text-xl font-bold text-heading">{selectedOther.title || selectedOther.caption || 'Untitled'}</h2>
-                    <button onClick={() => setSelectedOther(null)} className="px-2 py-1 rounded-lg themed-card">Close</button>
+                    <h2 className="text-lg sm:text-xl font-bold text-heading line-clamp-2">{selectedOther.title || selectedOther.caption || 'Untitled'}</h2>
+                    <button onClick={() => setSelectedOther(null)} className="px-3 py-1 rounded-lg themed-card text-sm">Close</button>
                   </div>
                   {selectedOther.location && (
                     <div className="text-sm text-theme-secondary mb-2 flex items-center gap-2">
@@ -1638,10 +1638,13 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                     </div>
                   )}
                   {Array.isArray(selectedOther.tags) && selectedOther.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {selectedOther.tags.slice(0, 8).map((t: string, idx: number) => (
-                        <span key={idx} className="badge text-xs">{t}</span>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      {selectedOther.tags.slice(0, 6).map((t: string, idx: number) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-full text-xs text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
                       ))}
+                      {selectedOther.tags.length > 6 && (
+                        <span className="px-2 py-0.5 rounded-full text-xs text-theme-secondary" style={{ border: '1px solid var(--border)' }}>…</span>
+                      )}
                     </div>
                   )}
                   <p className="text-sm text-theme-secondary whitespace-pre-line mb-4">{selectedOther.caption}</p>
@@ -1665,18 +1668,18 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                           <img
                             src={selectedOther.author.avatar || `https://ui-avatars.com/api/?name=${selectedOther.author.username || 'User'}`}
                             alt={selectedOther.author.username || 'User'}
-                            className="w-12 h-12 rounded-full border-2 border-cyan-400"
+                            className="w-10 h-10 rounded-full border"
                           />
                           <div>
-                            <p className="text-white font-semibold hover:text-cyan-400 transition-colors">
+                            <p className="text-heading font-semibold hover:text-cyan-400 transition-colors">
                               {selectedOther.author.username || 'User'}
                             </p>
-                            <p className="text-gray-400 text-sm">Post Author · Click to view profile</p>
+                            <p className="text-theme-secondary text-sm">Post Author · Click to view profile</p>
                           </div>
                         </div>
                         <button
                           onClick={() => onStartConversation && onStartConversation(selectedOther.author._id)}
-                          className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition-all shadow-lg"
+                          className="btn text-sm"
                         >
                           Message Author
                         </button>
