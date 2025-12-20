@@ -67,6 +67,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [showAllComments, setShowAllComments] = useState<Record<string, boolean>>({});
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const [commentBoxOpen, setCommentBoxOpen] = useState<Record<string, boolean>>({});
   
   // Reply state
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -389,6 +390,10 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     }
   }
 
+  function toggleCommentBox(postId: string) {
+    setCommentBoxOpen(prev => ({ ...prev, [postId]: !prev[postId] }));
+  }
+
   return (
     <div className="min-h-screen themed-page p-4 sm:p-6">
       <div className="max-w-3xl lg:max-w-4xl mx-auto">
@@ -524,7 +529,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       </span>
                     </button>
                     <button 
-                      onClick={() => toggleComments(post._id)}
+                      onClick={() => toggleCommentBox(post._id)}
                       className="flex items-center gap-1.5 text-theme-secondary hover:text-cyan-500"
                     >
                       <MessageCircle className="w-5 h-5" />
@@ -855,27 +860,30 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                     </div>
                   )}
 
-                  {/* Add Comment */}
-                  <div className="flex items-center gap-2 pt-3 mt-1 border-t rounded-xl" style={{ borderColor: 'var(--border)' }}>
-                    <input
-                      type="text"
-                      placeholder="Add a comment..."
-                      className="input flex-1 min-w-0 text-sm"
-                      value={commentTexts[post._id] || ""}
-                      onChange={(e) =>
-                        setCommentTexts({ ...commentTexts, [post._id]: e.target.value })
-                      }
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") handleComment(post._id);
-                      }}
-                    />
-                    <button
-                      onClick={() => handleComment(post._id)}
-                      className="btn px-3 py-2 shrink-0"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {/* Add Comment (hidden until toggled) */}
+                  {commentBoxOpen[post._id] && (
+                    <div className="flex items-center gap-2 pt-3 mt-1 border-t rounded-xl" style={{ borderColor: 'var(--border)' }}>
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        className="input flex-1 min-w-0 text-sm"
+                        value={commentTexts[post._id] || ""}
+                        onChange={(e) =>
+                          setCommentTexts({ ...commentTexts, [post._id]: e.target.value })
+                        }
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") handleComment(post._id);
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleComment(post._id)}
+                        className="btn px-3 py-2 shrink-0"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
