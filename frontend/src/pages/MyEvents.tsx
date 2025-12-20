@@ -34,6 +34,7 @@ export default function MyEvents({ token }: any) {
     const saved = localStorage.getItem('auralink-my-activities-tab') as TabType | null;
     return (saved as TabType) || 'events';
   });
+  const [hideInactiveEvents, setHideInactiveEvents] = useState<boolean>(true);
   const [eventsCreated, setEventsCreated] = useState<any[]>([]);
   const [eventsJoined, setEventsJoined] = useState<any[]>([]);
   const [eventsPending, setEventsPending] = useState<any[]>([]);
@@ -387,7 +388,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+            <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-theme-secondary mb-1">Active Services</p>
@@ -401,7 +402,7 @@ export default function MyEvents({ token }: any) {
               </div>
             </div>
 
-            <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+            <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-theme-secondary mb-1">Avg. Rating</p>
@@ -412,7 +413,7 @@ export default function MyEvents({ token }: any) {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
+                  <Star className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
@@ -430,8 +431,19 @@ export default function MyEvents({ token }: any) {
                     <button onClick={() => setEventsTab('joined')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='joined' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Joined ({eventsJoined.length})</button>
                     <button onClick={() => setEventsTab('pending')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='pending' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Pending ({eventsPending.length})</button>
                   </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <label className="inline-flex items-center gap-2 text-sm text-theme-secondary">
+                      <input
+                        type="checkbox"
+                        checked={hideInactiveEvents}
+                        onChange={(e) => setHideInactiveEvents(e.target.checked)}
+                        className="rounded"
+                      />
+                      Hide drafts/cancelled
+                    </label>
+                  </div>
                 </div>
-                {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).length === 0 ? (
+                {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true).length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -454,7 +466,9 @@ export default function MyEvents({ token }: any) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending).map((event) => (
+                    {(eventsTab==='organizing' ? eventsCreated : eventsTab==='joined' ? eventsJoined : eventsPending)
+                      .filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true)
+                      .map((event) => (
                       <div
                         key={event._id}
                         className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
@@ -466,11 +480,18 @@ export default function MyEvents({ token }: any) {
                               <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
                                 {event.title}
                               </h3>
-                              {event.sport && (
-                                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-sm font-medium">
-                                  {event.sport}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {event.sport && (
+                                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-medium">
+                                    {event.sport}
+                                  </span>
+                                )}
+                                {event.pricing && (
+                                  <span className="inline-block px-3 py-1 bg-white/10 text-white rounded-lg text-xs font-medium">
+                                    {event.pricing.type === 'paid' ? `${event.pricing.currency} ${event.pricing.amount}` : 'Free'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="flex gap-2 ml-4">
                               <button
@@ -554,19 +575,16 @@ export default function MyEvents({ token }: any) {
                               </button>
                             </div>
 
-                            {event.pricing?.type === "paid" && (
+                            {event.pricing && (
                               <div className="flex items-center gap-2 text-theme-secondary">
-                                <DollarSign className="w-4 h-4 text-slate-500" />
+                                {event.pricing.type === 'paid' ? (
+                                  <DollarSign className="w-4 h-4 text-slate-500" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 text-green-500" />
+                                )}
                                 <span>
-                                  {event.pricing.currency} {event.pricing.amount}
+                                  {event.pricing.type === 'paid' ? `${event.pricing.currency} ${event.pricing.amount}` : 'Free'}
                                 </span>
-                              </div>
-                            )}
-
-                            {event.pricing?.type === "free" && (
-                              <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                                <AlertCircle className="w-4 h-4" />
-                                <span className="font-medium">Free Event</span>
                               </div>
                             )}
                           </div>
@@ -600,15 +618,15 @@ export default function MyEvents({ token }: any) {
               <>
                 {/* Services Tab Content */}
                 {services.length === 0 ? (
-                  <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                  <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900 dark:to-pink-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Stethoscope className="w-10 h-10 text-purple-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-xl font-bold text-heading mb-2">
                         No Services Yet
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      <p className="text-theme-secondary mb-6">
                         You haven't created any services. Start by offering your first service!
                       </p>
                       <button
@@ -625,8 +643,7 @@ export default function MyEvents({ token }: any) {
                     {services.map((service) => (
                       <div
                         key={service._id}
-                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
-                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
                       >
                         {/* Service Header */}
                         <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
@@ -752,15 +769,15 @@ export default function MyEvents({ token }: any) {
               <>
                 {/* Products Tab Content */}
                 {products.length === 0 ? (
-                  <div className="rounded-3xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                  <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900 dark:to-emerald-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <ShoppingBag className="w-10 h-10 text-green-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-xl font-bold text-heading mb-2">
                         No Products Yet
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      <p className="text-theme-secondary mb-6">
                         You haven't listed any products. Start selling your sports gear and merchandise!
                       </p>
                       <button
@@ -777,8 +794,7 @@ export default function MyEvents({ token }: any) {
                     {products.map((product) => (
                       <div
                         key={product._id}
-                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
-                        style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
                       >
                         {/* Product Header */}
                         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6">
@@ -885,10 +901,12 @@ export default function MyEvents({ token }: any) {
                               >
                                 {product.status}
                               </span>
-                              <div className="flex items-center gap-1 text-theme-secondary">
-                                <Eye className="w-4 h-4" />
-                                <span className="text-xs">{product.views || 0}</span>
-                              </div>
+                              {product.views > 0 && (
+                                <div className="flex items-center gap-1 text-theme-secondary">
+                                  <Eye className="w-4 h-4" />
+                                  <span className="text-xs">{product.views}</span>
+                                </div>
+                              )}
                             </div>
                             <span className="text-xs text-theme-secondary">
                               Created {dayjs(product.createdAt).fromNow()}
