@@ -785,11 +785,11 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                   )}
 
                   {/* Add Comment */}
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex items-center gap-2 pt-2">
                     <input
                       type="text"
                       placeholder="Add a comment..."
-                      className="input flex-1 text-sm"
+                      className="input flex-1 min-w-0 text-sm"
                       value={commentTexts[post._id] || ""}
                       onChange={(e) =>
                         setCommentTexts({ ...commentTexts, [post._id]: e.target.value })
@@ -800,7 +800,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                     />
                     <button
                       onClick={() => handleComment(post._id)}
-                      className="btn p-2"
+                      className="btn px-3 py-2 shrink-0"
                     >
                       <Send className="w-4 h-4" />
                     </button>
