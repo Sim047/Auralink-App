@@ -125,14 +125,14 @@ export default function Sidebar({
       icon: Users,
       label: "Followers",
       value: followers,
-      color: "from-blue-500 to-cyan-500",
+      color: "from-emerald-500/12 to-green-500/10",
       onClick: () => onNavigate?.('followers')
     },
     {
       icon: UserPlus,
       label: "Following",
       value: following,
-      color: "from-purple-500 to-pink-500",
+      color: "from-emerald-500/12 to-green-500/10",
       onClick: () => onNavigate?.('following')
     }
   ];
@@ -416,15 +416,15 @@ export default function Sidebar({
                   key={index}
                   onClick={stat.onClick}
                   className={`
-                    relative rounded-xl p-3 cursor-pointer themed-card
-                    transition-all duration-300 hover:scale-105 hover:shadow-xl
+                    relative rounded-xl p-3 cursor-pointer themed-card bg-gradient-to-r ${stat.color}
+                    transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-emerald-500/40
                     ${isCollapsed ? 'aspect-square' : ''}
                   `}
                 >
                   <div className="relative z-10">
                     <div className={`flex ${isCollapsed ? 'flex-col items-center justify-center h-full' : 'items-center justify-between'}`}>
                       <div className={isCollapsed ? 'mb-1' : ''}>
-                        <Icon className="w-5 h-5 text-cyan-300" />
+                        <Icon className="w-5 h-5 text-emerald-400" />
                       </div>
                       {!isCollapsed && (
                         <div className="text-right">
