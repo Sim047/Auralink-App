@@ -106,7 +106,6 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
         />
         <div>
           <h2 className="text-xl font-bold">{profile.username}</h2>
-          <p className="text-sm opacity-70">{profile.email}</p>
         </div>
       </div>
 

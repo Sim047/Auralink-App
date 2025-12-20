@@ -1,5 +1,6 @@
 // frontend/src/components/SearchUsers.tsx
 import React, { useEffect, useState } from "react";
+import { getUserSubtitle } from "../utils/userDisplay";
 import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL || "";
@@ -83,7 +84,12 @@ export default function SearchUsers({ token, onOpenConversation, currentUserId, 
               onClick={() => onShowProfile(u)}
             >
               <div className="font-semibold">{u.username}</div>
-              <div className="text-xs text-muted">{u.email}</div>
+              {(() => {
+                const subtitle = getUserSubtitle(u);
+                return subtitle ? (
+                  <div className="text-xs text-muted">{subtitle}</div>
+                ) : null;
+              })()}
             </div>
 
             <button

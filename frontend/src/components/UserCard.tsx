@@ -1,5 +1,6 @@
 import React from "react";
 import Avatar from "./Avatar";
+import { getUserSubtitle } from "../utils/userDisplay";
 
 export interface UserCardProps {
   user: any;
@@ -79,9 +80,14 @@ export default function UserCard({
           {user.username}
         </div>
 
-        <div className="text-xs card-text-muted truncate w-full mb-4">
-          {user.email}
-        </div>
+        {(() => {
+          const subtitle = getUserSubtitle(user);
+          return subtitle ? (
+            <div className="text-xs card-text-muted truncate w-full mb-4">{subtitle}</div>
+          ) : (
+            <div className="mb-4" />
+          );
+        })()}
 
         <div className="flex flex-col gap-2 mt-auto w-full">
           {messageButton}
@@ -103,7 +109,12 @@ export default function UserCard({
 
       <div className="flex-1 cursor-pointer min-w-0" onClick={() => onShowProfile(user)}>
         <div className="font-semibold card-text truncate">{user.username}</div>
-        <div className="text-sm card-text-muted truncate">{user.email}</div>
+        {(() => {
+          const subtitle = getUserSubtitle(user);
+          return subtitle ? (
+            <div className="text-sm card-text-muted truncate">{subtitle}</div>
+          ) : null;
+        })()}
       </div>
 
       <div className="flex gap-2 w-full sm:w-auto">

@@ -47,7 +47,6 @@ export default function ProfileModal({
               style={{ borderColor: 'var(--border)' }}
             />
             <h2 className="mt-4 text-xl font-semibold text-heading">{user.username}</h2>
-            <p className="text-xs text-theme-secondary">{user.email}</p>
           </div>
 
           {/* Followers / Following */}
