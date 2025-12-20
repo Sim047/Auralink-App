@@ -116,6 +116,7 @@ export default function App() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesSectionRef = useRef<HTMLDivElement | null>(null);
   const unreadRef = useRef<HTMLDivElement | null>(null);
+  const mainRef = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
@@ -155,6 +156,32 @@ export default function App() {
   // Persist view changes to localStorage
   useEffect(() => {
     localStorage.setItem("auralink-current-view", view);
+  }, [view]);
+
+  // Dispatch scroll direction events for the main content container
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    let last = el.scrollTop;
+
+    const onScroll = () => {
+      const current = el.scrollTop;
+      const diff = current - last;
+      if (Math.abs(diff) > 8) {
+        const direction = diff > 0 ? "down" : "up";
+        try {
+          window.dispatchEvent(
+            new CustomEvent("auralink.scrollDirection", {
+              detail: { direction, scrollTop: current },
+            })
+          );
+        } catch {}
+        last = current;
+      }
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
   }, [view]);
 
   // editing messages
@@ -1221,6 +1248,7 @@ function onMyStatusUpdated(newStatus: any) {
           view === "chat" ? "overflow-hidden h-screen" : "overflow-auto p-4 lg:p-6",
           view !== "chat" ? "pt-14 lg:pt-0" : ""
         )} 
+        ref={mainRef}
         style={{ color: 'var(--text)' }}
       >
         {/* DASHBOARD PAGE */}
