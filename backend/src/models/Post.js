@@ -26,6 +26,7 @@ const PostSchema = new mongoose.Schema(
     comments: [CommentSchema],
     tags: [{ type: String }],
     location: { type: String, default: "" },
+    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     captionEditedAt: { type: Date },
   },
   { timestamps: true }

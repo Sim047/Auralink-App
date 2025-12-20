@@ -193,6 +193,8 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [createOtherOpen, setCreateOtherOpen] = useState(false);
   const [newOther, setNewOther] = useState({ title: "", caption: "", imageUrl: "", location: "", tags: "event" });
   const [uploadingOtherImage, setUploadingOtherImage] = useState(false);
+  const [selectedOther, setSelectedOther] = useState<any | null>(null);
+  const [joiningOther, setJoiningOther] = useState<InFlightMap>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("auralink-discover-search") || "");
   const [filterCategory, setFilterCategory] = useState(() => localStorage.getItem("auralink-discover-filter") || "");
@@ -346,6 +348,59 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     } catch (err) {
       console.error("Failed to create event post:", err);
       alert("Failed to create event post");
+    }
+  };
+
+  const openOtherDetails = async (postId: string) => {
+    try {
+      const resp = await axios.get(`${API_URL}/posts/${postId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      setSelectedOther(resp.data);
+    } catch (e) {
+      console.error("Failed to fetch post details, falling back to cached post:", e);
+      const fallback = otherEvents.find((p) => p._id === postId) || null;
+      setSelectedOther(fallback);
+    }
+  };
+
+  const handleJoinOther = async (postId: string) => {
+    if (!token) {
+      alert("Please log in to join");
+      return;
+    }
+    if (joiningOther[postId]) return;
+    setJoiningOther((m) => ({ ...m, [postId]: true }));
+    try {
+      const resp = await axios.post(`${API_URL}/posts/${postId}/join`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const updated = resp.data.post || resp.data;
+      setOtherEvents((list) => list.map((p) => (p._id === postId ? updated : p)));
+      if (selectedOther && selectedOther._id === postId) setSelectedOther(updated);
+    } catch (err) {
+      console.error("Join other event failed:", err);
+      alert("Failed to join");
+    } finally {
+      setJoiningOther((m) => { const n = { ...m }; delete n[postId]; return n; });
+    }
+  };
+
+  const handleLeaveOther = async (postId: string) => {
+    if (!token) {
+      alert("Please log in to leave");
+      return;
+    }
+    if (joiningOther[postId]) return;
+    setJoiningOther((m) => ({ ...m, [postId]: true }));
+    try {
+      const resp = await axios.post(`${API_URL}/posts/${postId}/leave`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const updated = resp.data.post || resp.data;
+      setOtherEvents((list) => list.map((p) => (p._id === postId ? updated : p)));
+      if (selectedOther && selectedOther._id === postId) setSelectedOther(updated);
+    } catch (err) {
+      console.error("Leave other event failed:", err);
+      alert("Failed to leave");
+    } finally {
+      setJoiningOther((m) => { const n = { ...m }; delete n[postId]; return n; });
     }
   };
 
@@ -1459,7 +1514,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   String(p.location || "").toLowerCase().includes(q)
                 );
               }).map((post) => (
-                <div key={post._id} className="rounded-xl overflow-hidden themed-card">
+                <div key={post._id} className="rounded-xl overflow-hidden themed-card cursor-pointer" onClick={() => openOtherDetails(post._id)}>
                   {/* Poster Image */}
                   {post.imageUrl && (
                     <div className="h-40 w-full bg-black/10">
@@ -1468,6 +1523,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   )}
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-heading mb-2 line-clamp-2">{post.title || post.caption || "Untitled"}</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs text-theme-secondary flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>{(post.participants?.length || 0)} joined</span>
+                      </div>
+                      {(post.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
+                        <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">Joined</span>
+                      ) : null}
+                    </div>
                   {Array.isArray(post.tags) && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {post.tags.slice(0, 5).map((t: string, idx: number) => (
@@ -1485,15 +1549,90 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                     <span className="mx-2">•</span>
                     <span>{dayjs(post.createdAt).fromNow()}</span>
                   </div>
-                  <button
-                    onClick={() => onStartConversation(post.author?._id)}
-                    className="btn w-full text-sm justify-center"
-                  >
-                    Message Author
-                  </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onStartConversation(post.author?._id); }}
+                        className="btn w-full text-sm justify-center"
+                      >
+                        Message Author
+                      </button>
+                      {(post.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleLeaveOther(post._id); }}
+                          disabled={!!joiningOther[post._id]}
+                          className="btn w-full text-sm justify-center"
+                        >
+                          Leave
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleJoinOther(post._id); }}
+                          disabled={!!joiningOther[post._id]}
+                          className="btn w-full text-sm justify-center"
+                        >
+                          Join
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {/* Other Event Detail Modal */}
+          {selectedOther && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedOther(null)} />
+              <div className="relative w-full max-w-2xl mx-4 rounded-2xl themed-card overflow-hidden">
+                {selectedOther.imageUrl && (
+                  <div className="h-48 w-full">
+                    <img src={selectedOther.imageUrl} alt={selectedOther.title || selectedOther.caption || 'Event'} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <h2 className="text-xl font-bold text-heading">{selectedOther.title || selectedOther.caption || 'Untitled'}</h2>
+                    <button onClick={() => setSelectedOther(null)} className="px-2 py-1 rounded-lg themed-card">Close</button>
+                  </div>
+                  {selectedOther.location && (
+                    <div className="text-sm text-theme-secondary mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{selectedOther.location}</span>
+                    </div>
+                  )}
+                  {Array.isArray(selectedOther.tags) && selectedOther.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {selectedOther.tags.slice(0, 8).map((t: string, idx: number) => (
+                        <span key={idx} className="badge text-xs">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-sm text-theme-secondary whitespace-pre-line mb-4">{selectedOther.caption}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-xs text-theme-secondary flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span>{(selectedOther.participants?.length || 0)} joined</span>
+                    </div>
+                    {(selectedOther.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
+                      <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">Joined</span>
+                    ) : null}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="btn w-full text-sm justify-center" onClick={() => onStartConversation(selectedOther.author?._id)}>
+                      Message Author
+                    </button>
+                    {(selectedOther.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
+                      <button className="btn w-full text-sm justify-center" disabled={!!joiningOther[selectedOther._id]} onClick={() => handleLeaveOther(selectedOther._id)}>
+                        Leave
+                      </button>
+                    ) : (
+                      <button className="btn w-full text-sm justify-center" disabled={!!joiningOther[selectedOther._id]} onClick={() => handleJoinOther(selectedOther._id)}>
+                        Join
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

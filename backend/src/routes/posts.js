@@ -54,7 +54,8 @@ router.get("/:id", auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
       .populate("author", "username avatar email")
-      .populate("comments.user", "username avatar");
+      .populate("comments.user", "username avatar")
+      .populate("participants", "username avatar");
 
     if (!post) {
       return res.status(404).json({ error: "Post not found" });
@@ -64,6 +65,55 @@ router.get("/:id", auth, async (req, res) => {
   } catch (err) {
     console.error("Get post error:", err);
     res.status(500).json({ error: "Failed to fetch post" });
+  }
+});
+// Join a post (used for Other Events)
+router.post("/:id/join", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    post.participants = post.participants || [];
+    const already = post.participants.some((p) => String(p) === String(req.user.id));
+    if (already) return res.status(400).json({ error: "You have already joined" });
+
+    post.participants.push(req.user.id);
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("participants", "username avatar");
+
+    const io = req.app.get("io");
+    if (io) io.emit("post_joined", { postId: post._id, userId: req.user.id });
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error("Join post error:", err);
+    res.status(500).json({ error: "Failed to join" });
+  }
+});
+
+// Leave a post
+router.post("/:id/leave", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    post.participants = post.participants || [];
+    const idx = post.participants.findIndex((p) => String(p) === String(req.user.id));
+    if (idx === -1) return res.status(400).json({ error: "Not a participant" });
+
+    post.participants.splice(idx, 1);
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("participants", "username avatar");
+
+    const io = req.app.get("io");
+    if (io) io.emit("post_left", { postId: post._id, userId: req.user.id });
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error("Leave post error:", err);
+    res.status(500).json({ error: "Failed to leave" });
   }
 });
 
