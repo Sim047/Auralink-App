@@ -1218,7 +1218,8 @@ function onMyStatusUpdated(newStatus: any) {
       <main 
         className={clsx(
           "flex-1 flex flex-col",
-          view === "chat" ? "overflow-hidden h-screen" : "overflow-auto p-4 lg:p-6"
+          view === "chat" ? "overflow-hidden h-screen" : "overflow-auto p-4 lg:p-6",
+          view !== "chat" ? "pt-14 lg:pt-0" : ""
         )} 
         style={{ color: 'var(--text)' }}
       >
