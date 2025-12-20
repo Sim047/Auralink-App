@@ -19,6 +19,7 @@ import {
   Package,
   Eye,
   Truck,
+  Image as ImageIcon,
 } from "lucide-react";
 import CreateEventModal from "../components/CreateEventModal";
 import CreateServiceModal from "../components/CreateServiceModal";
@@ -53,6 +54,9 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
   const [participantsModalEvent, setParticipantsModalEvent] = useState<any>(null);
   const [otherEvents, setOtherEvents] = useState<any[]>([]);
   const [loadingOther, setLoadingOther] = useState<boolean>(false);
+  const [createOtherOpen, setCreateOtherOpen] = useState<boolean>(false);
+  const [newOther, setNewOther] = useState<{ title: string; caption: string; location: string; tags: string; imageUrl: string }>({ title: "", caption: "", location: "", tags: "event", imageUrl: "" });
+  const [uploadingOtherImage, setUploadingOtherImage] = useState<boolean>(false);
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
@@ -99,6 +103,60 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       setOtherEvents([]);
     } finally {
       setLoadingOther(false);
+    }
+  }
+
+  async function handleOtherImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Image must be under 10MB");
+      return;
+    }
+    try {
+      setUploadingOtherImage(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post(`${API}/files/upload`, formData, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setNewOther((p) => ({ ...p, imageUrl: res.data.url }));
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Failed to upload image");
+    } finally {
+      setUploadingOtherImage(false);
+    }
+  }
+
+  async function handleCreateOther() {
+    if (!token) {
+      alert("Please log in to create an event post");
+      return;
+    }
+    if (!newOther.title.trim() && !newOther.caption.trim() && !newOther.imageUrl) {
+      alert("Please add a caption or image");
+      return;
+    }
+    try {
+      const tags = (newOther.tags || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      const res = await axios.post(
+        `${API}/posts`,
+        { title: newOther.title || "", caption: newOther.caption, imageUrl: newOther.imageUrl, tags, location: newOther.location },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setOtherEvents((prev) => [res.data, ...prev]);
+      setNewOther({ title: "", caption: "", imageUrl: "", location: "", tags: "event" });
+      setCreateOtherOpen(false);
+    } catch (err) {
+      console.error("Failed to create event post:", err);
+      alert("Failed to create event post");
     }
   }
 
@@ -430,6 +488,154 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
           if (activeTab === "events") {
             return (
               <div>
+                {/* Inline discover: Other Events (top) */}
+                <div className="mb-6">
+                  <div className="rounded-2xl p-6 themed-card">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold text-heading mb-1">Other Events</h3>
+                        <p className="text-theme-secondary">Discover community activities beyond sports.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            localStorage.setItem('auralink-discover-category', 'other');
+                            onNavigate && onNavigate('discover');
+                          }}
+                          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all"
+                        >
+                          Explore Other Events
+                        </button>
+                        <button
+                          onClick={() => setCreateOtherOpen((v) => !v)}
+                          className="px-4 py-2 btn"
+                        >
+                          {createOtherOpen ? 'Close' : 'Create Other Event'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Mini-grid preview */}
+                    <div className="mt-4">
+                      {loadingOther ? (
+                        <div className="text-theme-secondary text-sm">Loading...</div>
+                      ) : otherEvents.length === 0 ? (
+                        <div className="text-theme-secondary text-sm">No other events yet</div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {otherEvents.slice(0, 4).map((post) => (
+                            <div key={post._id} className="rounded-xl overflow-hidden themed-card cursor-pointer" onClick={() => { localStorage.setItem('auralink-discover-category', 'other'); onNavigate && onNavigate('discover'); }}>
+                              {post.imageUrl && (
+                                <div className="w-full h-40 sm:h-48 bg-black/10">
+                                  <img src={post.imageUrl} alt={post.title || post.caption || 'Event'} className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              <div className="p-3">
+                                <h4 className="text-sm font-semibold text-heading line-clamp-2">{post.title || post.caption || 'Untitled'}</h4>
+                                {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                  <div className="flex flex-wrap items-center gap-1 mt-2">
+                                    {post.tags.slice(0, 3).map((t: string, idx: number) => (
+                                      <span key={idx} className="px-2 py-0.5 rounded-full text-[11px] text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Compact Create Other Event Form */}
+                    {createOtherOpen && (
+                      <div className="mt-6 rounded-2xl p-4 themed-card">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-theme-secondary">Event Name</label>
+                            <input
+                              value={newOther.title}
+                              onChange={(e) => setNewOther((p) => ({ ...p, title: e.target.value }))}
+                              className="w-full mt-1 rounded-lg input"
+                              placeholder="e.g. Community Fundraiser"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-theme-secondary">Caption</label>
+                            <textarea
+                              value={newOther.caption}
+                              onChange={(e) => setNewOther((p) => ({ ...p, caption: e.target.value }))}
+                              className="w-full mt-1 rounded-lg input min-h-24"
+                              placeholder="Describe your event or announcement"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-theme-secondary">Location (optional)</label>
+                            <input
+                              value={newOther.location}
+                              onChange={(e) => setNewOther((p) => ({ ...p, location: e.target.value }))}
+                              className="w-full mt-1 rounded-lg input"
+                              placeholder="City or venue"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-theme-secondary">Tags</label>
+                            <input
+                              value={newOther.tags}
+                              onChange={(e) => setNewOther((p) => ({ ...p, tags: e.target.value }))}
+                              className="w-full mt-1 rounded-lg input"
+                              placeholder="Comma-separated tags (default: event)"
+                            />
+                            {String(newOther.tags || '').trim() && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {String(newOther.tags).split(',').map((t) => t.trim()).filter(Boolean).slice(0, 8).map((t, idx) => (
+                                  <span key={idx} className="badge text-xs">{t}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <label className="text-sm text-theme-secondary">Image</label>
+                            <div className="flex items-center gap-3 mt-1">
+                              <input id="my-other-image-upload" type="file" accept="image/*" onChange={handleOtherImageUpload} className="hidden" />
+                              <label htmlFor="my-other-image-upload" className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4" /> Upload Image
+                              </label>
+                              {uploadingOtherImage && <span className="text-xs text-theme-secondary">Uploading...</span>}
+                              {newOther.imageUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => setNewOther((p) => ({ ...p, imageUrl: '' }))}
+                                  className="px-2 py-1 bg-slate-700 hover:bg-slate-800 text-white rounded text-xs"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                            {newOther.imageUrl && (
+                              <div className="mt-3 rounded-lg overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                                <img src={newOther.imageUrl} alt="Preview" className="w-full h-32 object-cover" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-end justify-end">
+                            <div className="flex gap-2 w-full justify-end">
+                              <button
+                                className="btn"
+                                onClick={handleCreateOther}
+                                disabled={uploadingOtherImage || !(newOther.title.trim() || newOther.caption.trim() || newOther.imageUrl)}
+                              >
+                                {uploadingOtherImage ? 'Uploading...' : 'Publish'}
+                              </button>
+                              <button className="btn" onClick={() => setCreateOtherOpen(false)}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="mb-6">
                   <div className="inline-flex rounded-xl overflow-hidden themed-card">
                     <button onClick={() => setEventsTab('organizing')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='organizing' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Organizing ({eventsCreated.length})</button>
@@ -611,56 +817,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                     ))}
                   </div>
                 )}
-              {/* Inline discover: Other Events CTA */}
-              <div className="mt-8">
-                <div className="rounded-2xl p-6 themed-card">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-heading mb-1">Other Events</h3>
-                      <p className="text-theme-secondary">Discover community activities beyond sports.</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        localStorage.setItem('auralink-discover-category', 'other');
-                        onNavigate && onNavigate('discover');
-                      }}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all"
-                    >
-                      Explore Other Events
-                    </button>
-                  </div>
-                  {/* Mini-grid preview */}
-                  <div className="mt-4">
-                    {loadingOther ? (
-                      <div className="text-theme-secondary text-sm">Loading...</div>
-                    ) : otherEvents.length === 0 ? (
-                      <div className="text-theme-secondary text-sm">No other events yet</div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {otherEvents.slice(0, 4).map((post) => (
-                          <div key={post._id} className="rounded-xl overflow-hidden themed-card cursor-pointer" onClick={() => { localStorage.setItem('auralink-discover-category', 'other'); onNavigate && onNavigate('discover'); }}>
-                            {post.imageUrl && (
-                              <div className="w-full h-40 sm:h-48 bg-black/10">
-                                <img src={post.imageUrl} alt={post.title || post.caption || 'Event'} className="w-full h-full object-cover" />
-                              </div>
-                            )}
-                            <div className="p-3">
-                              <h4 className="text-sm font-semibold text-heading line-clamp-2">{post.title || post.caption || 'Untitled'}</h4>
-                              {Array.isArray(post.tags) && post.tags.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-1 mt-2">
-                                  {post.tags.slice(0, 3).map((t: string, idx: number) => (
-                                    <span key={idx} className="px-2 py-0.5 rounded-full text-[11px] text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              {/* Removed duplicate bottom Other Events section (now placed at top) */}
             </div>
             );
           } else if (activeTab === "services") {
