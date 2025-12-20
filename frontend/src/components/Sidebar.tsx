@@ -174,7 +174,7 @@ export default function Sidebar({
     <>
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 right-4 z-30 p-2 rounded-xl border shadow-lg transition-all"
+        className="lg:hidden fixed top-4 left-4 z-30 p-2 rounded-xl border shadow-lg transition-all"
         style={{
           backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
           borderColor: theme === 'dark' ? '#475569' : '#cbd5e1'
