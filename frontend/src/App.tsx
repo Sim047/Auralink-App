@@ -243,6 +243,7 @@ export default function App() {
   // Per-message actions dropdown (collapsed by default)
   const [openMessageActions, setOpenMessageActions] = useState<string | null>(null);
   const messagePressTimer = useRef<number | null>(null);
+  const DEFAULT_REACTION_EMOJI = "❤️";
 
   function startMessagePress(id: string) {
     try {
@@ -1249,18 +1250,20 @@ function onMyStatusUpdated(newStatus: any) {
                   style={{ borderColor: 'var(--border)' }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {["❤️", "🔥", "😂", "😔"].map((emoji) => (
-                    <button
-                      key={emoji}
-                      className={clsx(
-                        "px-2 py-1 rounded-full border",
-                        hasReacted(m, emoji) && "reacted"
-                      )}
-                      onClick={() => toggleReaction(m, emoji)}
-                    >
-                      {emoji} {reactionCount(m, emoji) || ""}
-                    </button>
-                  ))}
+                  {(() => {
+                    const emoji = DEFAULT_REACTION_EMOJI;
+                    return (
+                      <button
+                        className={clsx(
+                          "px-2 py-1 rounded-full border",
+                          hasReacted(m, emoji) && "reacted"
+                        )}
+                        onClick={() => toggleReaction(m, emoji)}
+                      >
+                        {emoji} {reactionCount(m, emoji) || ""}
+                      </button>
+                    );
+                  })()}
 
                   {String(m.sender?._id) === String(user?._id) && (
                     <div className="ml-2 flex gap-2 text-xs">
