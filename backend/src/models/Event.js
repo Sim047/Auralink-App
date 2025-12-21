@@ -11,6 +11,8 @@ const EventSchema = new Schema(
     // Optional sport type: when present, treated as a sports event
     sport: { type: String, default: undefined },
     startDate: { type: Date, required: true },
+    // Optional end date; when past, event is considered completed and archived
+    endsAt: { type: Date },
     time: { type: String },
     location: {
       name: String,
@@ -39,10 +41,14 @@ const EventSchema = new Schema(
       },
     ],
     status: { type: String, enum: ["draft", "published", "cancelled"], default: "published" },
+    // Auto-archiving marker; when set the event should be hidden from "upcoming" lists
+    archivedAt: { type: Date },
   },
   { timestamps: true }
 );
 
 EventSchema.index({ startDate: 1 });
+EventSchema.index({ endsAt: 1 });
+EventSchema.index({ archivedAt: 1 });
 
 export default mongoose.model("Event", EventSchema);

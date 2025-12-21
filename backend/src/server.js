@@ -23,6 +23,7 @@ import servicesRoutes from "./routes/services.js";
 import postsRoutes from "./routes/posts.js";
 import marketplaceRoutes from "./routes/marketplace.js";
 import aiRoutes from "./routes/ai.js";
+import Event from "./models/Event.js";
 
 // MODELS
 import Message from "./models/Message.js";
@@ -427,6 +428,35 @@ mongoose
   .connect(process.env.MONGO_URI, { autoIndex: true })
   .then(() => {
     console.log("MongoDB connected");
+    // Auto-archiving: mark past events with archivedAt
+    async function autoArchivePastEvents() {
+      try {
+        const now = new Date();
+        // Archive events where endsAt is in the past, or where starts are past and endsAt missing
+        const criteria = {
+          $and: [
+            { $or: [
+              { archivedAt: { $exists: false } },
+              { archivedAt: null },
+            ] },
+            { $or: [
+              { endsAt: { $lt: now } },
+              { $and: [ { $or: [ { endsAt: { $exists: false } }, { endsAt: null } ] }, { startDate: { $lt: now } } ] },
+            ] },
+          ],
+        };
+        const result = await Event.updateMany(criteria, { $set: { archivedAt: now } });
+        if (result.modifiedCount) {
+          console.log(`[archive] Archived ${result.modifiedCount} past events`);
+        }
+      } catch (e) {
+        console.error('[archive] autoArchivePastEvents failed', e?.message || e);
+      }
+    }
+
+    // Run at startup and every hour
+    autoArchivePastEvents();
+    setInterval(autoArchivePastEvents, 60 * 60 * 1000);
     server.listen(PORT, HOST, () => {
       console.log(`Server running on ${HOST}:${PORT}`);
     });

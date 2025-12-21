@@ -8,7 +8,14 @@ const router = express.Router();
 // GET /api/events - list events (simple)
 router.get("/", async (req, res) => {
   try {
+    const includeArchived = String(req.query.includeArchived || "").toLowerCase() === "true";
     const q = { status: "published" };
+    if (!includeArchived) {
+      q.$or = [
+        { archivedAt: { $exists: false } },
+        { archivedAt: null }
+      ];
+    }
     if (req.query.sport && String(req.query.sport).trim()) {
       q.sport = req.query.sport;
     }
@@ -58,7 +65,15 @@ router.get("/user/:userId", async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
     const skip = (page - 1) * limit;
 
+    const includeArchived = String(req.query.includeArchived || "").toLowerCase() === "true";
     const query = { status: "published", organizer: userId };
+    if (!includeArchived) {
+      query.$or = [
+        ...(query.$or || []),
+        { archivedAt: { $exists: false } },
+        { archivedAt: null }
+      ];
+    }
     if (req.query.sport && String(req.query.sport).trim()) {
       query.sport = req.query.sport;
     }
@@ -113,7 +128,15 @@ router.get("/user/:userId", async (req, res) => {
 // GET /api/events/my/created - events organized by current user
 router.get("/my/created", auth, async (req, res) => {
   try {
-    const events = await Event.find({ organizer: req.user.id })
+    const includeArchived = String(req.query.includeArchived || "").toLowerCase() === "true";
+    const q = { organizer: req.user.id };
+    if (!includeArchived) {
+      q.$or = [
+        { archivedAt: { $exists: false } },
+        { archivedAt: null },
+      ];
+    }
+    const events = await Event.find(q)
       .sort({ startDate: -1 })
       .populate("organizer", "username avatar")
       .populate("participants", "username avatar email")
@@ -174,7 +197,15 @@ router.put("/:id", auth, async (req, res) => {
 // GET /api/events/my/joined - events where current user is a participant
 router.get("/my/joined", auth, async (req, res) => {
   try {
-    const events = await Event.find({ participants: req.user.id })
+    const includeArchived = String(req.query.includeArchived || "").toLowerCase() === "true";
+    const q = { participants: req.user.id };
+    if (!includeArchived) {
+      q.$or = [
+        { archivedAt: { $exists: false } },
+        { archivedAt: null },
+      ];
+    }
+    const events = await Event.find(q)
       .sort({ startDate: -1 })
       .populate("organizer", "username avatar")
       .populate("participants", "username avatar email")
@@ -183,6 +214,40 @@ router.get("/my/joined", auth, async (req, res) => {
   } catch (err) {
     console.error("Get my joined events error:", err);
     res.status(500).json({ error: "Failed to fetch joined events" });
+  }
+});
+
+// GET /api/events/my/archived - archived events where current user is organizer or participant
+router.get("/my/archived", auth, async (req, res) => {
+  try {
+    const archivedCriteria = { $and: [
+      { $or: [ { archivedAt: { $exists: true } }, { archivedAt: { $ne: null } } ] },
+    ] };
+
+    const [createdArchived, joinedArchived] = await Promise.all([
+      Event.find({ ...archivedCriteria, organizer: req.user.id })
+        .sort({ startDate: -1 })
+        .populate("organizer", "username avatar")
+        .populate("participants", "username avatar email"),
+      Event.find({ ...archivedCriteria, participants: req.user.id })
+        .sort({ startDate: -1 })
+        .populate("organizer", "username avatar")
+        .populate("participants", "username avatar email"),
+    ]);
+
+    // Dedupe across created/joined
+    const seen = new Set();
+    const combined = [...createdArchived, ...joinedArchived].filter((e) => {
+      const id = String(e._id);
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
+    res.json({ events: combined });
+  } catch (err) {
+    console.error("Get my archived events error:", err);
+    res.status(500).json({ error: "Failed to fetch archived events" });
   }
 });
 
