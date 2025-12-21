@@ -903,7 +903,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             {sportsList.map((sport) => (
               <button
                 key={sport}
-                onClick={() => setSelectedSport(sport)}
+                onClick={() => sport === "Other Events" ? setActiveCategory("other") : setSelectedSport(sport)}
                 className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
                     selectedSport === sport
                       ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
