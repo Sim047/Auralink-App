@@ -159,6 +159,20 @@ export default function App() {
     localStorage.setItem("auralink-current-view", view);
   }, [view]);
 
+  // Keep URL query in sync with current view to preserve on refresh
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.set('view', view);
+      if (view !== 'posts') params.delete('post');
+      const qs = params.toString();
+      const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      window.history.replaceState({}, '', newUrl);
+    } catch (e) {
+      console.warn('Failed to sync view to URL:', e);
+    }
+  }, [view]);
+
   // Handle deep-link query params (e.g., ?view=posts&post=ID)
   useEffect(() => {
     try {
