@@ -576,13 +576,24 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                   <div
                     key={event._id}
                     onClick={() => openEventDetails(event._id)}
-                    className="p-4 rounded-xl themed-card hover:shadow-md transition-colors cursor-pointer"
+                    className="p-4 rounded-xl themed-card hover:shadow-md transition-colors cursor-pointer relative"
                   >
+                    {(() => {
+                      const isArchived = !!(event as any).archivedAt;
+                      const isPast = !isArchived && dayjs(event.startDate).isBefore(dayjs());
+                      return (
+                        (isArchived || isPast) && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">Past</span>
+                          </div>
+                        )
+                      );
+                    })()}
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent-light rounded-xl flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
                         {dayjs(event.startDate).format('DD')}
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className={`flex-1 min-w-0 ${(event as any).archivedAt || dayjs(event.startDate).isBefore(dayjs()) ? 'opacity-70' : ''}`}>
                         <h3 className="font-semibold text-heading mb-1">{event.title}</h3>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm text-theme-secondary">
