@@ -247,6 +247,7 @@ export default function App() {
   const AVAILABLE_REACTIONS = ["❤️", "🔥", "😂", "😔"];
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [messageReactionChoice, setMessageReactionChoice] = useState<Record<string, string>>({});
+  const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   function currentReactionEmojiFor(msg: any) {
     // Prefer the emoji the current user has reacted with on this message
@@ -303,6 +304,13 @@ function startEdit(m: any) {
 function cancelEdit() {
   setEditingMessageId(null);
   setEditingText("");
+}
+
+function onMessageContainerClick(e: React.MouseEvent<HTMLDivElement>) {
+  const t = e.target as HTMLElement;
+  const tag = (t.tagName || '').toLowerCase();
+  if (["button", "a", "input", "textarea", "img", "svg", "path"].includes(tag)) return;
+  composerTextareaRef.current?.focus();
 }
 
 async function saveEdit(id: string) {
@@ -1155,7 +1163,7 @@ function onMyStatusUpdated(newStatus: any) {
               )
             ) : null}
 
-            <div className={clsx("message", String(m.sender?._id) === String(user?._id) && "msg-mine")}> 
+            <div className={clsx("message", String(m.sender?._id) === String(user?._id) && "msg-mine")} onClick={onMessageContainerClick}> 
               <div className="flex items-center gap-2">
                 {String(m.sender?._id) !== String(user?._id) && showAvatar && <strong>{m.sender?.username}</strong>}
                 <span
@@ -1194,15 +1202,7 @@ function onMyStatusUpdated(newStatus: any) {
                   </span>
                 )}
 
-                {/* Collapsed actions toggle */}
-                <button
-                  className="ml-2 text-xs px-2 py-1 rounded-md border hover:bg-slate-100 dark:hover:bg-slate-800"
-                  style={{ borderColor: 'var(--border)' }}
-                  onClick={(e) => { e.stopPropagation(); setOpenMessageActions(openMessageActions === m._id ? null : m._id); }}
-                  title="Message actions"
-                >
-                  ⋯
-                </button>
+                {/* Removed three-dots toggle to simplify reply UX */}
               </div>
 
               {m.fileUrl && (
@@ -1812,6 +1812,7 @@ function onMyStatusUpdated(newStatus: any) {
                     height: '48px'
                   }}
                   wrap="soft"
+                  ref={composerTextareaRef}
                   value={text}
                   onChange={onComposerChange}
                   onKeyDown={handleKeyPress}
