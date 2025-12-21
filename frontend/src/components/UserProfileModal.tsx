@@ -201,7 +201,10 @@ export default function UserProfileModal({
                     <button
                       key={ev._id}
                       onClick={() => {
-                        try { localStorage.setItem('auralink-highlight-event', ev._id); } catch {}
+                        try {
+                          localStorage.setItem('auralink-highlight-event', ev._id);
+                          localStorage.setItem('auralink-discover-category', 'sports');
+                        } catch {}
                         if (onNavigate) onNavigate('discover'); else window.location.href = '/';
                       }}
                       className="w-full text-left bg-white/5 rounded-xl p-3 border border-white/10 hover:border-cyan-500/40 transition-colors"

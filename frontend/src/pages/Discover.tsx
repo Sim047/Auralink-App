@@ -239,6 +239,32 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     localStorage.setItem("auralink-discover-search", searchTerm);
   }, [searchTerm]);
 
+  // Auto-open highlighted event when arriving from profile or search
+  useEffect(() => {
+    try {
+      if (activeCategory === "sports" && events.length > 0) {
+        const id = localStorage.getItem("auralink-highlight-event");
+        if (id) {
+          openEventDetails(id);
+          localStorage.removeItem("auralink-highlight-event");
+        }
+      }
+    } catch {}
+  }, [activeCategory, events.length]);
+
+  // Auto-open highlighted other event post when arriving from search
+  useEffect(() => {
+    try {
+      if (activeCategory === "other" && otherEvents.length > 0) {
+        const id = localStorage.getItem("auralink-highlight-post");
+        if (id) {
+          openOtherDetails(id);
+          localStorage.removeItem("auralink-highlight-post");
+        }
+      }
+    } catch {}
+  }, [activeCategory, otherEvents.length]);
+
   const fetchEvents = async () => {
     setLoading(true);
     try {

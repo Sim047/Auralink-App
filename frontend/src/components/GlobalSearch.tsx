@@ -132,10 +132,12 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
         onViewProfile && onViewProfile(item.raw);
         break;
       case "event":
+        try { localStorage.setItem("auralink-highlight-event", item.id); } catch {}
         localStorage.setItem("auralink-discover-category", "sports");
         onNavigate && onNavigate("discover");
         break;
       case "other":
+        try { localStorage.setItem("auralink-highlight-post", item.id); } catch {}
         localStorage.setItem("auralink-discover-category", "other");
         onNavigate && onNavigate("discover");
         break;
