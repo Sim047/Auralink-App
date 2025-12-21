@@ -38,6 +38,31 @@ export default function ConversationsList({
     } catch { return true; }
   });
 
+  function updateConversations(list: any[]) {
+    setConversations(list);
+    const total = list.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
+    setTotalUnread(total);
+  }
+
+  // Debug banner for WebView: show API URL, token presence, user id
+  const [showDebugBanner, setShowDebugBanner] = useState<boolean>(() => {
+    try {
+      const dismissed = localStorage.getItem('dm-debug-banner-dismissed') === 'true';
+      const inWebView = typeof window !== 'undefined' && (window as any).ReactNativeWebView;
+      const debugEnabled = localStorage.getItem('DEBUG_WEBVIEW') === 'true';
+      return inWebView && debugEnabled && !dismissed;
+    } catch { return false; }
+  });
+  const debugInfo = React.useMemo(() => {
+    try {
+      const tokenSet = !!localStorage.getItem('token');
+      const userRaw = localStorage.getItem('user') || '{}';
+      const u = JSON.parse(userRaw);
+      const uid = u?._id || u?.id || '';
+      return { api: API || '', token: tokenSet ? 'present' : 'missing', userId: uid || 'unset' };
+    } catch { return { api: API || '', token: 'unknown', userId: 'unknown' }; }
+  }, []);
+
   // Cache TTL in ms (2 minutes)
   const CACHE_KEY = "auralink-conversations-cache";
   const CACHE_TTL = 2 * 60 * 1000;
@@ -132,12 +157,6 @@ export default function ConversationsList({
         });
       } catch {}
     }
-
-          function updateConversations(list: any[]) {
-            setConversations(list);
-            const total = list.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
-            setTotalUnread(total);
-          }
     try {
       socket?.on("receive_message", onReceiveMessage);
       socket?.on("message_edited", onMessageEdited);
@@ -270,6 +289,22 @@ export default function ConversationsList({
 
   return (
     <div className="flex flex-col gap-2 sm:gap-3">
+      {showDebugBanner && (
+        <div className="rounded-lg px-3 py-2 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 border" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1">
+              <div><span className="font-semibold">Debug:</span> API_URL = {debugInfo.api || 'unset'}</div>
+              <div>Token = {debugInfo.token}; UserId = {debugInfo.userId}</div>
+            </div>
+            <button
+              className="text-[11px] px-2 py-1 rounded-md bg-white/60 dark:bg-slate-700/60 hover:opacity-80"
+              onClick={() => { try { localStorage.setItem('dm-debug-banner-dismissed','true'); } catch {}; setShowDebugBanner(false); }}
+            >
+              Hide
+            </button>
+          </div>
+        </div>
+      )}
       {showLongPressHint && (
         <div className="rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between gap-2">
