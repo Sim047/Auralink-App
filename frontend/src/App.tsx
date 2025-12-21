@@ -251,6 +251,7 @@ export default function App() {
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [messageReactionChoice, setMessageReactionChoice] = useState<Record<string, string>>({});
   const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [replyTo, setReplyTo] = useState<any | null>(null);
 
   function currentReactionEmojiFor(msg: any) {
     // Prefer the emoji the current user has reacted with on this message
@@ -758,7 +759,8 @@ function onMyStatusUpdated(newStatus: any) {
             text: fileUrls.indexOf(fileUrl) === 0 ? text : "",
             room: targetRoom,
             fileUrl,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            replyTo: replyTo?._id || null
           }
         });
       }
@@ -783,7 +785,8 @@ function onMyStatusUpdated(newStatus: any) {
           text,
           room: targetRoom,
           fileUrl: "",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          replyTo: replyTo?._id || null
         }
       });
     }
@@ -791,6 +794,7 @@ function onMyStatusUpdated(newStatus: any) {
     setText("");
     setSelectedImages([]);
     setFile(null);
+    setReplyTo(null);
     
     // Reset textarea height
     setTimeout(() => {
@@ -806,6 +810,36 @@ function onMyStatusUpdated(newStatus: any) {
     // Refresh conversations if this was a DM (to update lastMessage and unread counts)
     if (inDM) {
       refreshConversations();
+    }
+  }
+  // Message actions helpers ------------------------------------
+  function copyMessageText(m: any) {
+    try {
+      if (m.text) navigator.clipboard.writeText(m.text);
+      setOpenMessageActions(null);
+    } catch {}
+  }
+
+  async function hideMessageForMe(id: string) {
+    try {
+      await axios.delete(`${API}/api/messages/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setMessages((msgs) => msgs.filter((x) => x._id !== id));
+    } catch (e) {
+      console.error("Hide message error", e);
+    } finally {
+      setOpenMessageActions(null);
+    }
+  }
+
+  async function deleteMessageForEveryone(id: string) {
+    try {
+      await axios.delete(`${API}/api/messages/${id}/force`, { headers: { Authorization: `Bearer ${token}` } });
+      setMessages((msgs) => msgs.filter((x) => x._id !== id));
+    } catch (e) {
+      console.error("Force delete error", e);
+      alert("Failed to delete message for everyone");
+    } finally {
+      setOpenMessageActions(null);
     }
   }
 
@@ -1327,14 +1361,48 @@ function onMyStatusUpdated(newStatus: any) {
 
               {openMessageActions === m._id && (
                 <div
-                  className="mt-2 p-2 rounded-lg border bg-white dark:bg-slate-800 flex flex-wrap items-center gap-2 text-sm"
-                  style={{ borderColor: 'var(--border)' }}
+                  className="mt-2 p-2 rounded-lg border flex flex-wrap items-center gap-2 text-sm"
+                  style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button
+                    className="text-xs px-3 py-1 rounded-md border"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => { setReplyTo(m); setOpenMessageActions(null); composerTextareaRef.current?.focus(); }}
+                  >
+                    Reply
+                  </button>
+
+                  {m.text && (
+                    <button
+                      className="text-xs px-3 py-1 rounded-md border"
+                      style={{ borderColor: 'var(--border)' }}
+                      onClick={() => copyMessageText(m)}
+                    >
+                      Copy text
+                    </button>
+                  )}
+
+                  <button
+                    className="text-xs px-3 py-1 rounded-md border"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => { setReactionPickerFor(m._id); setOpenMessageActions(null); }}
+                  >
+                    Change reaction
+                  </button>
+
+                  <button
+                    className="text-xs px-3 py-1 rounded-md border"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => hideMessageForMe(m._id)}
+                  >
+                    Hide for me
+                  </button>
+
                   {String(m.sender?._id) === String(user?._id) && (
                     <div className="ml-2 flex gap-2 text-xs">
                       <button onClick={() => startEdit(m)}>Edit</button>
-                      <button onClick={() => deleteMessage(m._id)}>Delete</button>
+                      <button onClick={() => deleteMessageForEveryone(m._id)}>Delete for everyone</button>
                     </div>
                   )}
 
@@ -1806,6 +1874,22 @@ function onMyStatusUpdated(newStatus: any) {
               style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
               onSubmit={sendMessage}
             >
+              {replyTo && (
+                <div className="mb-2 p-2 rounded-md border text-xs flex items-center gap-2"
+                     style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
+                  <span className="opacity-80">Replying to</span>
+                  <strong>{replyTo?.sender?.username || 'User'}</strong>
+                  <span className="opacity-70 truncate max-w-[50%]">{(replyTo?.text || '').slice(0, 80)}</span>
+                  <button
+                    type="button"
+                    className="ml-auto text-[11px] px-2 py-1 rounded-md border"
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => setReplyTo(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
               {/* Image Preview Bar */}
               {selectedImages.length > 0 && (
                 <div className="flex gap-2 p-2 bg-slate-800/30 rounded-md overflow-x-auto">
