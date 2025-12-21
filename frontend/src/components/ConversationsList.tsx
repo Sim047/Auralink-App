@@ -336,15 +336,25 @@ export default function ConversationsList({
                   )}
                 </div>
 
-                <div
-                  className="flex-1 min-w-0 cursor-pointer"
-                  onClick={() => onShowProfile(partner)}
-                >
-                  <div className={`font-bold truncate ${unreadCount > 0 ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`font-bold truncate ${unreadCount > 0 ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-900 dark:text-slate-100'} cursor-pointer`}
+                    onClick={() => {
+                      // Optimistically zero unread and open chat when clicking name
+                      setConversations((prev) => {
+                        const idx = prev.findIndex((x: any) => String(x._id) === String(c._id));
+                        if (idx === -1) return prev;
+                        const next = [...prev];
+                        next[idx] = { ...next[idx], unreadCount: 0 };
+                        setTotalUnread(next.reduce((sum: number, x: any) => sum + (x.unreadCount || 0), 0));
+                        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: next })); } catch {}
+                        return next;
+                      });
+                      onOpenConversation(c);
+                    }}
+                    title="Open chat"
+                  >
                     {partner.username}
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                    {partner.email}
                   </div>
                   {/* Last message preview + relative time */}
                   <div className="text-xs mt-0.5 text-slate-500 dark:text-slate-400 truncate">
@@ -357,27 +367,6 @@ export default function ConversationsList({
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  className="flex-1 sm:flex-none px-4 py-2 rounded-md bg-gradient-to-r from-emerald-500 to-indigo-600 text-white text-sm font-medium hover:shadow-lg transition-all"
-                  onClick={() => {
-                    // Optimistically zero unread for this conversation
-                    setConversations((prev) => {
-                      const idx = prev.findIndex((x: any) => String(x._id) === String(c._id));
-                      if (idx === -1) return prev;
-                      const next = [...prev];
-                      next[idx] = { ...next[idx], unreadCount: 0 };
-                      // Recompute totals
-                      setTotalUnread(next.reduce((sum: number, x: any) => sum + (x.unreadCount || 0), 0));
-                      // Update cache
-                      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: next })); } catch {}
-                      return next;
-                    });
-                    onOpenConversation(c);
-                  }}
-                >
-                  {c.unreadCount > 0 ? 'Open Chat (' + c.unreadCount + ')' : 'Open Chat'}
-                </button>
-
                 {/* Options Menu */}
                 <Menu as="div" className="relative">
                   <Menu.Button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
