@@ -49,12 +49,7 @@ export default function UserContent({ token, onNavigate }: any) {
     setHasMore(true);
   }, [tab, userId]);
 
-  useEffect(() => {
-    // When 'Other' selected under Events, don't load events; we'll switch to Posts
-    if (tab === 'events' && eventFilter === 'Other') return;
-    if (!userId || !hasMore || loading) return;
-    loadPage(page);
-  }, [page, userId, tab]);
+  // Removed the direct load-on-page-change effect to avoid double fetches.
 
   // Auto-switch to Posts when selecting 'Other' under Events
   useEffect(() => {
@@ -102,7 +97,18 @@ export default function UserContent({ token, onNavigate }: any) {
       .get(url, { headers })
       .then((r) => {
         const list = tab === "events" ? (r.data.events || []) : (r.data.posts || []);
-        setItems((prev) => [...prev, ...list]);
+        // Dedupe by _id to avoid accidental double appends
+        setItems((prev) => {
+          const merged = [...prev, ...list];
+          const seen = new Set<string>();
+          const unique = merged.filter((it: any) => {
+            const id = String(it?._id || "");
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          });
+          return unique;
+        });
         const totalCount = (tab === "events" ? r.data.total : r.data.totalPosts) || list.length;
         setTotal(totalCount);
         const tp = r.data.totalPages || 1;
