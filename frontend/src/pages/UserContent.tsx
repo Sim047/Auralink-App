@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL || "";
@@ -15,6 +15,7 @@ export default function UserContent({ token, onNavigate }: any) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
+  const [totalPages, setTotalPages] = useState<number | null>(null);
   const [search, setSearch] = useState<string>("");
   const [eventFilter, setEventFilter] = useState<string>("All"); // All | Other | specific sport
   const SPORTS = [
@@ -26,6 +27,9 @@ export default function UserContent({ token, onNavigate }: any) {
   ];
   // Event filter removed for simplicity
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // Prefetch cache for next page
+  const [prefetch, setPrefetch] = useState<any[] | null>(null);
+  const [prefetchPageNum, setPrefetchPageNum] = useState<number | null>(null);
 
   useEffect(() => {
     setUserId(localStorage.getItem("auralink-user-content-id"));
@@ -60,20 +64,40 @@ export default function UserContent({ token, onNavigate }: any) {
     }
   }, [eventFilter, tab]);
 
-  function loadPage(p: number) {
-    setLoading(true);
-    const headers = { Authorization: `Bearer ${token}` };
+  const buildUrl = useCallback((p: number) => {
     const limit = 20;
     const isEvents = tab === 'events';
-    const isPosts = tab === 'posts';
     const searchParam = search.trim() ? `&search=${encodeURIComponent(search.trim())}` : '';
     const isSportsSelection = isEvents && SPORTS.includes(eventFilter);
     const isOtherSelection = isEvents && eventFilter === 'Other';
     const sportParam = isSportsSelection ? `&sport=${encodeURIComponent(eventFilter)}` : '';
     const categoryParam = isOtherSelection ? `&category=other` : (isSportsSelection ? `&category=sports` : '');
-    const url = tab === "events"
-      ? `${API}/api/events/user/${userId}?page=${p}&limit=${limit}${sportParam}${categoryParam}${searchParam}`
-      : `${API}/api/posts/user/${userId}?page=${p}&limit=${limit}${searchParam}`;
+    const fieldsParam = isEvents
+      ? `&fields=title,startDate,location,image`
+      : `&fields=title,caption,imageUrl`;
+    return tab === "events"
+      ? `${API}/api/events/user/${userId}?page=${p}&limit=${limit}${sportParam}${categoryParam}${searchParam}${fieldsParam}`
+      : `${API}/api/posts/user/${userId}?page=${p}&limit=${limit}${searchParam}${fieldsParam}`;
+  }, [API, tab, userId, search, eventFilter]);
+
+  const prefetchPage = useCallback((pNext: number) => {
+    if (!userId) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = buildUrl(pNext);
+    axios.get(url, { headers })
+      .then((r) => {
+        const list = tab === "events" ? (r.data.events || []) : (r.data.posts || []);
+        setPrefetch(list);
+        setPrefetchPageNum(pNext);
+      })
+      .catch(() => { /* ignore prefetch errors */ })
+      .finally(() => {});
+  }, [userId, token, buildUrl, tab]);
+
+  function loadPage(p: number) {
+    setLoading(true);
+    const headers = { Authorization: `Bearer ${token}` };
+    const url = buildUrl(p);
     axios
       .get(url, { headers })
       .then((r) => {
@@ -81,8 +105,11 @@ export default function UserContent({ token, onNavigate }: any) {
         setItems((prev) => [...prev, ...list]);
         const totalCount = (tab === "events" ? r.data.total : r.data.totalPosts) || list.length;
         setTotal(totalCount);
-        const totalPages = r.data.totalPages || 1;
-        setHasMore(p < totalPages);
+        const tp = r.data.totalPages || 1;
+        setTotalPages(tp);
+        setHasMore(p < tp);
+        // Background prefetch next page
+        if (p < tp) prefetchPage(p + 1);
       })
       .finally(() => setLoading(false));
   }
@@ -91,12 +118,29 @@ export default function UserContent({ token, onNavigate }: any) {
     if (!sentinelRef.current) return;
     const io = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore && !loading) {
+        // If we already prefetched this upcoming page, consume it immediately
         setPage((pp) => pp + 1);
       }
-    }, { rootMargin: '200px' });
+    }, { rootMargin: '800px' });
     io.observe(sentinelRef.current);
     return () => io.disconnect();
   }, [hasMore, loading]);
+
+  // When page changes, consume prefetch if available for this page
+  useEffect(() => {
+    if (tab === 'events' && eventFilter === 'Other') return;
+    if (!userId || loading) return;
+    if (prefetch && prefetchPageNum === page) {
+      setItems((prev) => [...prev, ...prefetch]);
+      setPrefetch(null);
+      setPrefetchPageNum(null);
+      if (totalPages) setHasMore(page < totalPages);
+      // Preload next page again if more pages remain
+      if (totalPages && page < totalPages) prefetchPage(page + 1);
+      return;
+    }
+    if (hasMore) loadPage(page);
+  }, [page, userId, tab]);
 
   function formatLocation(loc: any): string {
     try {
@@ -176,11 +220,11 @@ export default function UserContent({ token, onNavigate }: any) {
         </div>
 
         <div className="space-y-3">
-          {items.map((it) => (
+          {useMemo(() => items.map((it) => (
             <button key={it._id} onClick={() => openFromCard(it)} className="w-full text-left p-3 rounded-xl themed-card hover:shadow-md">
               {tab === 'events' ? (
                 <div className="flex items-center gap-3">
-                  <img src={it.image || 'https://placehold.co/80x80?text=E'} className="w-12 h-12 rounded-lg object-cover" />
+                  <img src={it.image || 'https://placehold.co/80x80?text=E'} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-heading truncate">{it.title || 'Untitled Event'}</div>
                     <div className="text-xs text-theme-secondary truncate">{formatLocation(it.location)}</div>
@@ -189,7 +233,7 @@ export default function UserContent({ token, onNavigate }: any) {
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <img src={it.imageUrl || 'https://placehold.co/80x80?text=P'} className="w-12 h-12 rounded-lg object-cover" />
+                  <img src={it.imageUrl || 'https://placehold.co/80x80?text=P'} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-heading truncate">{it.title || 'Post'}</div>
                     <div className="text-xs text-theme-secondary line-clamp-2">{it.caption || ''}</div>
@@ -197,7 +241,7 @@ export default function UserContent({ token, onNavigate }: any) {
                 </div>
               )}
             </button>
-          ))}
+          )), [items, tab])}
           {loading && (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (

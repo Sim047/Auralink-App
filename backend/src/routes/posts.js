@@ -12,13 +12,19 @@ router.get("/", auth, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
+    // Optional field selection to slim payloads in preview lists
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
 
-    const posts = await Post.find()
-      .populate("author", "username avatar email")
-      .populate("comments.user", "username avatar")
+    const baseQuery = Post.find()
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
+    if (selectFields) baseQuery.select(selectFields);
+
+    const posts = await baseQuery
+      .populate("author", "username avatar email")
+      .populate("comments.user", "username avatar");
 
     const total = await Post.countDocuments();
 
@@ -50,13 +56,20 @@ router.get("/user/:userId", auth, async (req, res) => {
         { tags: { $regex: search, $options: 'i' } },
       ];
     }
+    // Optional field selection to slim payloads in preview lists
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+
+    const baseQuery = Post.find(q)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    if (selectFields) baseQuery.select(selectFields);
+
     const [posts, total] = await Promise.all([
-      Post.find(q)
+      baseQuery
         .populate("author", "username avatar email")
-        .populate("comments.user", "username avatar")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
+        .populate("comments.user", "username avatar"),
       Post.countDocuments(q),
     ]);
 
@@ -75,7 +88,11 @@ router.get("/user/:userId", auth, async (req, res) => {
 // Get single post
 router.get("/:id", auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+    const byIdQuery = Post.findById(req.params.id);
+    if (selectFields) byIdQuery.select(selectFields);
+    const post = await byIdQuery
       .populate("author", "username avatar email")
       .populate("comments.user", "username avatar")
       .populate("participants", "username avatar");

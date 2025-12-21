@@ -37,6 +37,24 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
     return () => window.removeEventListener('resize', updateMobile);
   }, []);
 
+  // Open with Ctrl+K
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const ctrlK = (e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'k');
+      if (ctrlK) {
+        e.preventDefault();
+        setOpen(true);
+        setTimeout(() => inputRef.current?.focus(), 10);
+      }
+      if (e.key === 'Escape' && open) {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   useEffect(() => {
     if (!debouncedQ || debouncedQ.trim().length < 2) {
       setResults([]);
@@ -155,21 +173,22 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
 
   return (
     <div className="relative">
-      {/* Trigger: input-style, responsive */}
-      <div
-        className="w-full flex items-center gap-2 px-4 py-2.5 sm:py-3 rounded-xl border transition-all"
-        style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
-      >
-        <Search className="w-4 h-4 text-theme-secondary" />
-        <input
-          readOnly
-          onFocus={handleOpen}
+      {/* Trigger: input-style, responsive. Hidden while overlay is open to avoid double appearance */}
+      {!open && (
+        <div
+          className="w-full flex items-center gap-2 px-4 py-2.5 sm:py-3 rounded-xl border transition-all"
+          style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
           onClick={handleOpen}
-          placeholder="Search everything… users, events, posts, services"
-          className="flex-1 bg-transparent outline-none text-sm sm:text-base"
-        />
-        <span className="hidden sm:inline text-xs text-theme-secondary">Press Ctrl+K</span>
-      </div>
+        >
+          <Search className="w-4 h-4 text-theme-secondary" />
+          <input
+            readOnly
+            placeholder="Search everything… users, events, posts, services"
+            className="flex-1 bg-transparent outline-none text-sm sm:text-base"
+          />
+          <span className="hidden sm:inline text-xs text-theme-secondary">Press Ctrl+K</span>
+        </div>
+      )}
 
       {/* Overlay */}
       {open && (
@@ -201,7 +220,8 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Type to search across the app…"
-              className={`flex-1 input rounded-lg ${isMobile ? 'text-base py-3' : ''}`}
+              className={`${isMobile ? 'text-base' : 'text-sm'} flex-1 rounded-xl px-3 py-2 border outline-none`}
+              style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
             />
             {!isMobile && (
               <button className="p-2 rounded-lg border" style={{ borderColor: 'var(--border)' }} onClick={handleClose}>
@@ -210,29 +230,32 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
             )}
           </div>
 
-          <div className={`text-theme-secondary mb-2 ${isMobile ? 'text-sm' : 'text-xs'}`}>{loading ? "Searching…" : `${results.length} results`}</div>
-
-          {results.length === 0 ? (
+          {loading ? (
+            <div className={`text-theme-secondary mb-2 ${isMobile ? 'text-sm' : 'text-xs'}`}>Searching…</div>
+          ) : results.length === 0 ? (
             <div className="text-theme-secondary text-sm">No matches</div>
           ) : (
-            <div className={`${isMobile ? 'max-h-[70vh]' : 'max-h-80'} overflow-y-auto space-y-1`}>
-              {results.map((r) => (
-                <button
-                  key={`${r.type}-${r.id}`}
-                  onClick={() => handleSelect(r)}
-                  className={`w-full text-left rounded-lg themed-card hover:shadow-sm flex items-center gap-3 ${isMobile ? 'p-4' : 'p-3'}`}
-                >
-                  {iconFor(r.type)}
-                  <div className="flex-1 min-w-0">
-                    <div className={`font-medium text-heading truncate ${isMobile ? 'text-base' : ''}`}>{r.title}</div>
-                    {r.subtitle && (
-                      <div className={`text-theme-secondary truncate ${isMobile ? 'text-sm' : 'text-xs'}`}>{r.subtitle}</div>
-                    )}
-                  </div>
-                  <div className={`px-2 py-1 rounded-md border ${isMobile ? 'text-sm' : 'text-xs'}`} style={{ borderColor: 'var(--border)' }}>{labelFor(r.type)}</div>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className={`text-theme-secondary mb-2 ${isMobile ? 'text-sm' : 'text-xs'}`}>{results.length} results</div>
+              <div className={`${isMobile ? 'max-h-[70vh]' : 'max-h-80'} overflow-y-auto space-y-1`}>
+                {results.map((r) => (
+                  <button
+                    key={`${r.type}-${r.id}`}
+                    onClick={() => handleSelect(r)}
+                    className={`w-full text-left rounded-lg themed-card hover:shadow-sm flex items-center gap-3 ${isMobile ? 'p-4' : 'p-3'}`}
+                  >
+                    {iconFor(r.type)}
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-medium text-heading truncate ${isMobile ? 'text-base' : ''}`}>{r.title}</div>
+                      {r.subtitle && (
+                        <div className={`text-theme-secondary truncate ${isMobile ? 'text-sm' : 'text-xs'}`}>{r.subtitle}</div>
+                      )}
+                    </div>
+                    <div className={`px-2 py-1 rounded-md border ${isMobile ? 'text-sm' : 'text-xs'}`} style={{ borderColor: 'var(--border)' }}>{labelFor(r.type)}</div>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
           {/* Backdrop click to close on mobile */}
           {isMobile && (

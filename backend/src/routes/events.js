@@ -34,10 +34,15 @@ router.get("/", async (req, res) => {
       ];
       q.$or = q.$or ? q.$or.concat(or) : or;
     }
-    const events = await Event.find(q)
-      .populate("organizer", "username avatar")
+    // Optional field selection to slim payloads in preview lists
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+
+    const eventsQuery = Event.find(q)
       .sort({ startDate: 1 })
       .limit(50);
+    if (selectFields) eventsQuery.select(selectFields);
+    const events = await eventsQuery.populate("organizer", "username avatar");
     res.json({ events });
   } catch (err) {
     console.error("Get events error:", err);
@@ -78,12 +83,18 @@ router.get("/user/:userId", async (req, res) => {
       ];
       query.$or = query.$or ? query.$or.concat(or) : or;
     }
+    // Optional field selection to slim payloads in preview lists
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+
+    const baseQuery = Event.find(query)
+      .sort({ startDate: -1 })
+      .skip(skip)
+      .limit(limit);
+    if (selectFields) baseQuery.select(selectFields);
+
     const [events, total] = await Promise.all([
-      Event.find(query)
-        .populate("organizer", "username avatar")
-        .sort({ startDate: -1 })
-        .skip(skip)
-        .limit(limit),
+      baseQuery.populate("organizer", "username avatar"),
       Event.countDocuments(query),
     ]);
 
@@ -196,7 +207,12 @@ router.get("/my/pending", auth, async (req, res) => {
 // GET /api/events/:id
 router.get("/:id", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id)
+    // Optional field selection; if provided we still populate common relations when possible
+    const fieldsParam = String(req.query.fields || "").trim();
+    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+    const byIdQuery = Event.findById(req.params.id);
+    if (selectFields) byIdQuery.select(selectFields);
+    const event = await byIdQuery
       .populate("organizer", "username avatar")
       .populate("participants", "username avatar email")
       .populate("joinRequests.user", "username avatar email");
