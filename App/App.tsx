@@ -158,6 +158,28 @@ function WebScreen({ navigation }: any) {
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
+        injectedJavaScriptBeforeContentLoaded={`(function(){
+          try {
+            if (!window.__RN_NAV_DEPTH) window.__RN_NAV_DEPTH = 1;
+            function post(){
+              try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'nav', depth: window.__RN_NAV_DEPTH, href: location.href })); } catch(e) {}
+            }
+            var _push = history.pushState;
+            var _replace = history.replaceState;
+            history.pushState = function(){ try{ window.__RN_NAV_DEPTH++; }catch(e){}; post(); return _push.apply(this, arguments); };
+            history.replaceState = function(){ try{ /* depth unchanged */ }catch(e){}; post(); return _replace.apply(this, arguments); };
+            window.addEventListener('popstate', function(){ try{ if(window.__RN_NAV_DEPTH>1) window.__RN_NAV_DEPTH--; }catch(e){}; post(); });
+            setTimeout(post, 0);
+          } catch(e) {}
+        })();`}
+        onMessage={(evt) => {
+          try {
+            const data = JSON.parse(evt.nativeEvent.data || '{}');
+            if (data && data.type === 'nav') {
+              setCanGoBack(!!(data.depth > 1));
+            }
+          } catch {}
+        }}
         onNavigationStateChange={(navState) => setCanGoBack(!!navState.canGoBack)}
       />
     </SafeAreaView>
