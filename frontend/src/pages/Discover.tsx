@@ -959,9 +959,25 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <div
                   key={event._id}
                   onClick={() => openEventDetails(event._id)}
-                  className="rounded-xl p-6 hover:scale-105 cursor-pointer border"
+                  className="rounded-xl p-6 hover:scale-105 cursor-pointer border relative"
                   style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
                 >
+                  {(() => {
+                    const isArchived = !!(event as any).archivedAt;
+                    const isPast = !isArchived && dayjs(event.startDate).isBefore(dayjs());
+                    return (
+                      <>
+                        {(isArchived || isPast) && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
+                              {isArchived ? 'Past' : 'Past'}
+                            </span>
+                          </div>
+                        )}
+                        <div className={isPast || isArchived ? 'opacity-70' : ''}></div>
+                      </>
+                    );
+                  })()}
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-lg font-bold text-heading mb-1">{event.title}</h3>
@@ -1008,14 +1024,24 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                       e.stopPropagation();
                       handleJoinEvent(event._id);
                     }}
-                    disabled={event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id) || !!joiningEvent[event._id]}
+                    disabled={
+                      !!(event as any).archivedAt ||
+                      event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id) ||
+                      !!joiningEvent[event._id]
+                    }
                     className={`w-full py-2 rounded-lg font-semibold transition-all ${
-                      event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id)
+                      (event as any).archivedAt
+                        ? "btn opacity-50 cursor-not-allowed"
+                        : event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id)
                         ? "btn opacity-50 cursor-not-allowed"
                         : "btn"
                     }`}
                   >
-                    {event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id) ? "Joined" : (!!joiningEvent[event._id] ? "Joining..." : "Join Event")}
+                    {(event as any).archivedAt
+                      ? "Past Event"
+                      : event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id)
+                      ? "Joined"
+                      : (!!joiningEvent[event._id] ? "Joining..." : "Join Event")}
                   </button>
                 </div>
               ))}
