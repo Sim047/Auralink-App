@@ -142,13 +142,16 @@ export default function UserContent({ token, onNavigate }: any) {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { setItems([]); setPage(1); setHasMore(true); } }}
             placeholder={tab === 'events' ? 'Search events (title, sport, location)…' : 'Search posts (title, caption, tags)…'}
-            className="input text-sm rounded-xl flex-1 min-w-[220px]"
+            className="rounded-xl flex-1 min-w-[220px] px-3 py-2 border"
+            style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
           />
           {tab === 'events' && (
             <select
               value={eventFilter}
               onChange={(e) => { setEventFilter(e.target.value); setItems([]); setPage(1); setHasMore(true); }}
-              className="input text-sm rounded-xl min-w-[180px]"
+              className="rounded-xl min-w-[200px] px-3 py-2 border"
+              style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+              aria-label="Event filter"
             >
               <option>All</option>
               <option>Other</option>
