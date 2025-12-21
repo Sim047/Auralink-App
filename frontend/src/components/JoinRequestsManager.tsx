@@ -132,8 +132,10 @@ export default function JoinRequestsManager({ token }: { token: string }) {
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">{req.user.username}</p>
-                {req.user.email && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{req.user.email}</p>
+                {(req.user.status || req.user.username) && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {req.user.status || (req.user.username ? `@${req.user.username}` : '')}
+                  </p>
                 )}
               </div>
             </div>

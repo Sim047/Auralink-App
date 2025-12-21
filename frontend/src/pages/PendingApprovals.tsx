@@ -133,7 +133,7 @@ import {
                               >
                                 {booking.user.username}
                               </p>
-                              <p className="text-sm text-theme-secondary">{booking.user.email}</p>
+                              <p className="text-sm text-theme-secondary">{booking.user.status || (booking.user.username ? `@${booking.user.username}` : '')}</p>
                             </div>
                           </div>
 

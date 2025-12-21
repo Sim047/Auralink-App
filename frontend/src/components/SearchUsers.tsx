@@ -35,7 +35,7 @@ export default function SearchUsers({
             const searchLower = q.toLowerCase();
             return (
               u.username?.toLowerCase().includes(searchLower) ||
-              u.email?.toLowerCase().includes(searchLower)
+              (u.status || '').toLowerCase().includes(searchLower)
             );
           });
           setResults(filtered);
@@ -106,7 +106,7 @@ export default function SearchUsers({
               onClick={() => onOpenProfile(u)}
             >
               <div className="font-semibold">{u.username}</div>
-              <div className="text-xs text-muted">{u.email}</div>
+              <div className="text-xs text-muted">{u.status || (u.username ? `@${u.username}` : '')}</div>
             </div>
 
             <button

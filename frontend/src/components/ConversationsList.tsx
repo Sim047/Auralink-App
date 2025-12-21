@@ -252,7 +252,7 @@ export default function ConversationsList({
       const u = partner || {};
       return (
         String(u.username || "").toLowerCase().includes(q) ||
-        String(u.email || "").toLowerCase().includes(q)
+        String(u.status || "").toLowerCase().includes(q)
       );
     });
   }, [conversations, debouncedQuery, currentUserId]);

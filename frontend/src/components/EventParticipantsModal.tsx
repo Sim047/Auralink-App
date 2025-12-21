@@ -59,12 +59,12 @@ export default function EventParticipantsModal({
   const exportParticipantsList = () => {
     try {
       const csvRows: string[] = [];
-      csvRows.push(["Name", "Email", "Username", "Status"].join(","));
+      csvRows.push(["Name", "Username", "Status"].join(","));
       (event.participants || []).forEach(p => {
-        csvRows.push([p.username || "", p.email || "", p.username || "", "Confirmed"].join(","));
+        csvRows.push([p.username || "", p.username || "", "Confirmed"].join(","));
       });
       (pendingRequests || []).forEach(req => {
-        csvRows.push([req.user?.username || "", req.user?.email || "", req.user?.username || "", "Pending"].join(","));
+        csvRows.push([req.user?.username || "", req.user?.username || "", "Pending"].join(","));
       });
 
       const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });

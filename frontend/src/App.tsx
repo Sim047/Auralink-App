@@ -2020,7 +2020,7 @@ function onMyStatusUpdated(newStatus: any) {
                     {profileUser.username}
                   </h2>
                   <p className="text-cyan-100 text-sm mt-1">
-                    {profileUser.email}
+                    {profileUser.status || (profileUser.username ? `@${profileUser.username}` : '')}
                   </p>
                 </div>
 

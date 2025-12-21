@@ -84,7 +84,9 @@ export default function UserProfileModal({
             alt={user.username}
           />
           <h2 className="mt-4 text-2xl font-bold text-white">{user.username}</h2>
-          <p className="text-cyan-100 text-sm mt-1">{user.email}</p>
+          <p className="text-cyan-100 text-sm mt-1">
+            {user.status || (user.username ? `@${user.username}` : '')}
+          </p>
         </div>
 
         {/* Stats & Actions Section */}

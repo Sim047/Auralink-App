@@ -172,7 +172,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
                       {booking.user.username}
                     </h3>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {booking.user.email}
+                      {booking.user.status || (booking.user.username ? `@${booking.user.username}` : '')}
                     </p>
                   </div>
                 </div>
