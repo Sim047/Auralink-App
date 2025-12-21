@@ -539,6 +539,51 @@ textarea,
   padding: 0.1rem 0.55rem;
 }
 
+/* Reaction UI (theme-aware, no hard-coded colors) */
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  transition: background-color var(--theme-transition) ease, border-color var(--theme-transition) ease;
+}
+.reaction-btn:hover {
+  background: var(--accent-cyan-muted);
+  border-color: rgba(34, 211, 238, 0.35);
+}
+.reaction-btn .count {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  opacity: 0.85;
+}
+
+.reaction-picker {
+  position: absolute;
+  z-index: 20;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+.reaction-option {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  transition: background-color var(--theme-transition) ease, border-color var(--theme-transition) ease;
+}
+.reaction-option:hover {
+  background: var(--accent-violet-muted);
+  border-color: rgba(124, 58, 237, 0.35);
+}
+
 /* =========================================================
    MODALS — FORCE SOLID NON-WASHED-OUT STYLE
    ========================================================= */
