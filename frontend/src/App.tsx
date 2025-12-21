@@ -8,7 +8,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
 import clsx from "clsx";
 import { Menu, Transition } from "@headlessui/react";
-import { Send, Trash2, X, Zap } from "lucide-react";
+import { Send, Trash2, X, Zap, Settings } from "lucide-react";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -125,6 +125,9 @@ export default function App() {
   const [expandedMessages, setExpandedMessages] = useState<Record<string, boolean>>({});
   const [showChatActions, setShowChatActions] = useState(false);
   const headerPressTimer = useRef<number | null>(null);
+  const [showLongPressHintChat, setShowLongPressHintChat] = useState<boolean>(() => {
+    try { return !localStorage.getItem('auralink-hint-chat-longpress'); } catch { return true; }
+  });
 
   function startHeaderPress() {
     try {
@@ -1571,6 +1574,15 @@ function onMyStatusUpdated(newStatus: any) {
                             <span className="font-semibold">
                               {partner?.username}
                             </span>
+                            {/* Settings icon to open chat actions */}
+                            <button
+                              className="p-1 rounded-md border hover:bg-slate-100 dark:hover:bg-slate-800"
+                              style={{ borderColor: 'var(--border)' }}
+                              onClick={(e) => { e.stopPropagation(); setShowChatActions(true); }}
+                              title="Chat settings"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </button>
                             {partner?._id && onlineUsers.has(partner._id) && (
                               <span className="text-xs text-green-500 font-medium">● Online</span>
                             )}
@@ -1723,6 +1735,20 @@ function onMyStatusUpdated(newStatus: any) {
                 )}
               </div>
             </header>
+            {showLongPressHintChat && (
+              <div className="mx-4 mt-2 mb-0 rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border"
+                   style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-theme-secondary">Tip: Long-press the header for chat options.</span>
+                  <button
+                    className="text-[11px] px-2 py-1 rounded-md bg-white/60 dark:bg-slate-700/60 hover:opacity-80"
+                    onClick={() => { try { localStorage.setItem('auralink-hint-chat-longpress','true'); } catch {}; setShowLongPressHintChat(false); }}
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* MESSAGE LIST */}
             <section 
