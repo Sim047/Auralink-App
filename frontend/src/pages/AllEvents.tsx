@@ -4,16 +4,14 @@ import axios from "axios";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { 
-  Calendar, Clock, MapPin, Users, ArrowLeft, 
-  Filter, CheckCircle, XCircle, AlertCircle, 
+  Calendar, Clock, MapPin, Users, ArrowLeft,
+  CheckCircle, XCircle, AlertCircle,
   Loader, Star, Trophy, DollarSign, Search
 } from "lucide-react";
 
 dayjs.extend(relativeTime);
 
 const API = (import.meta as any).env?.VITE_API_URL || "";
-
-type FilterType = "all" | "participating" | "organizing" | "upcoming" | "past";
 
 function toOtherItem(p: any, role: "organizing" | "participating") {
   return {
@@ -33,7 +31,6 @@ function toOtherItem(p: any, role: "organizing" | "participating") {
 export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: any) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("all");
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
@@ -102,25 +99,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
     }
   }
 
-  const getFilteredEvents = () => {
-    const now = new Date();
-    
-    switch (filter) {
-      case "organizing":
-        return events.filter(e => e.role === "organizing");
-      case "participating":
-        return events.filter(e => e.role === "participating");
-      case "upcoming":
-        return events.filter(e => new Date(e.startDate) >= now);
-      case "past":
-        return events.filter(e => new Date(e.startDate) < now);
-      default:
-        return events;
-    }
-  };
-
-  const filteredEvents = getFilteredEvents();
-  const displayEvents = filteredEvents.filter((e) => {
+  const displayEvents = events.filter((e) => {
     const q = search.trim().toLowerCase();
     if (!q) return true;
     const loc = e.location?.city || e.location?.name || e.location?.state || "";
@@ -130,14 +109,6 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
       String(loc).toLowerCase().includes(q)
     );
   });
-
-  const stats = {
-    all: events.length,
-    organizing: events.filter(e => e.role === "organizing").length,
-    participating: events.filter(e => e.role === "participating").length,
-    upcoming: events.filter(e => !e.isOther && new Date(e.startDate) >= new Date()).length,
-    past: events.filter(e => !e.isOther && new Date(e.startDate) < new Date()).length,
-  };
 
   return (
     <div className="min-h-screen themed-page">
@@ -176,79 +147,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
             />
           </div>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <button
-            onClick={() => setFilter("all")}
-            className={`p-4 rounded-xl transition-all ${
-              filter === "all"
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                : "hover:border-blue-500 themed-card"
-            }`}
-          >
-            <p className={`text-sm mb-1 ${filter === "all" ? "text-blue-100" : "text-theme-secondary"}`}>
-              All Events
-            </p>
-            <p className="text-2xl font-bold">{stats.all}</p>
-          </button>
-
-          <button
-            onClick={() => setFilter("organizing")}
-            className={`p-4 rounded-xl transition-all ${
-              filter === "organizing"
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-500/30"
-                : "hover:border-purple-500 themed-card"
-            }`}
-          >
-            <p className={`text-sm mb-1 ${filter === "organizing" ? "text-purple-100" : "text-theme-secondary"}`}>
-              Organizing
-            </p>
-            <p className="text-2xl font-bold">{stats.organizing}</p>
-          </button>
-
-          <button
-            onClick={() => setFilter("participating")}
-            className={`p-4 rounded-xl transition-all ${
-              filter === "participating"
-                ? "bg-green-600 text-white shadow-lg shadow-green-500/30"
-                : "hover:border-green-500 themed-card"
-            }`}
-          >
-            <p className={`text-sm mb-1 ${filter === "participating" ? "text-green-100" : "text-theme-secondary"}`}>
-              Participating
-            </p>
-            <p className="text-2xl font-bold">{stats.participating}</p>
-          </button>
-
-          <button
-            onClick={() => setFilter("upcoming")}
-            className={`p-4 rounded-xl transition-all ${
-              filter === "upcoming"
-                ? "bg-orange-600 text-white shadow-lg shadow-orange-500/30"
-                : "hover:border-orange-500 themed-card"
-            }`}
-          >
-            <p className={`text-sm mb-1 ${filter === "upcoming" ? "text-orange-100" : "text-theme-secondary"}`}>
-              Upcoming
-            </p>
-            <p className="text-2xl font-bold">{stats.upcoming}</p>
-          </button>
-
-          <button
-            onClick={() => setFilter("past")}
-            className={`p-4 rounded-xl transition-all ${
-              filter === "past"
-                ? "bg-gray-600 text-white shadow-lg shadow-gray-500/30"
-                : "hover:border-gray-500 themed-card"
-            }`}
-          >
-            <p className={`text-sm mb-1 ${filter === "past" ? "text-gray-100" : "text-theme-secondary"}`}>
-              Past
-            </p>
-            <p className="text-2xl font-bold">{stats.past}</p>
-          </button>
-        </div>
+        {/* Unified list — filters removed; shows all events including Other Events */}
 
         {/* Content */}
         {loading ? (
