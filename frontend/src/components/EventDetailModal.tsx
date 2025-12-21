@@ -35,6 +35,8 @@ interface Event {
     max: number;
     current: number;
   };
+  archivedAt?: string;
+  endsAt?: string;
 }
 
 interface EventDetailModalProps {
@@ -71,6 +73,7 @@ export default function EventDetailModal({
   const isParticipant = currentUserId && event.participants?.some((p: any) => p._id === currentUserId || p === currentUserId);
   const isOrganizer = currentUserId && event.organizer._id === currentUserId;
   const isFull = (event.participants?.length || 0) >= (event.capacity?.max || 0);
+  const isArchived = !!(event as any).archivedAt;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -88,6 +91,11 @@ export default function EventDetailModal({
                 <span className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1">
                   <Award className="w-4 h-4" />
                   {event.skillLevel}
+                </span>
+              )}
+              {isArchived && (
+                <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold">
+                  Past Event
                 </span>
               )}
               {/* Price removed: all events are free */}
@@ -150,6 +158,11 @@ export default function EventDetailModal({
 
           {/* Event Details */}
           <div className="space-y-4">
+            {isArchived && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3">
+                This event has ended and is archived. Joining is disabled.
+              </div>
+            )}
             <div>
               <h3 className="text-xl font-bold text-white mb-2">About This Event</h3>
               <p className="text-gray-300 leading-relaxed">{event.description}</p>
@@ -313,24 +326,28 @@ export default function EventDetailModal({
             <div className="flex gap-3">
               <button
                 onClick={() => onJoin(event._id)}
-                disabled={isParticipant || isFull}
+                disabled={isParticipant || isFull || isArchived}
                 className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-                  isParticipant
+                  isArchived
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : isParticipant
                     ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                     : isFull
                     ? "bg-red-600/50 text-red-300 cursor-not-allowed"
                     : "bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700 shadow-lg"
                 }`}
               >
-                {isParticipant 
-                  ? event.requiresApproval 
-                    ? "Request Pending / Joined"
-                    : "Already Joined"
-                  : isFull 
-                  ? "Event Full" 
-                  : event.requiresApproval
-                  ? "Request to Join"
-                  : "Join Event"
+                {isArchived
+                  ? "Past Event"
+                  : isParticipant 
+                    ? event.requiresApproval 
+                      ? "Request Pending / Joined"
+                      : "Already Joined"
+                    : isFull 
+                    ? "Event Full" 
+                    : event.requiresApproval
+                    ? "Request to Join"
+                    : "Join Event"
                 }
               </button>
             </div>
