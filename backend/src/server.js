@@ -26,6 +26,7 @@ import aiRoutes from "./routes/ai.js";
 
 // MODELS
 import Message from "./models/Message.js";
+import Conversation from "./models/Conversation.js";
 
 // dirname fix (because ES modules)
 const __filename = fileURLToPath(import.meta.url);
@@ -275,6 +276,15 @@ io.on("connection", (socket) => {
         .populate("sender", "username avatar")
         .populate("replyTo")
         .populate("readBy", "username");
+
+      // If room is a Conversation ID, update lastMessage and updatedAt to keep lists fresh
+      try {
+        if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
+          await Conversation.findByIdAndUpdate(room, { lastMessage: saved._id, updatedAt: new Date() });
+        }
+      } catch (e) {
+        console.warn('[socket] failed to update conversation lastMessage', e?.message || e);
+      }
 
       io.to(room).emit("receive_message", populated);
     } catch (err) {

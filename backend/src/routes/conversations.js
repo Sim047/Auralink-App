@@ -48,13 +48,11 @@ router.get('/', auth, async (req, res) => {
       })
     );
 
-    // Filter out conversations with no visible messages (user cleared/deleted everything)
-    const activeConvs = convsWithUnread.filter(c => c.totalVisibleMessages > 0);
-
-    console.log(`[conversations/get] User ${userId}: ${convs.length} total, ${activeConvs.length} with messages`);
-    console.log(`[conversations/get] Total unread: ${activeConvs.reduce((sum, c) => sum + c.unreadCount, 0)}`);
-    
-    res.json(activeConvs);
+    // Do NOT filter out conversations with no visible messages — legacy data may
+    // have messages stored under different room keys. Return all; frontend can decide.
+    console.log(`[conversations/get] User ${userId}: ${convs.length} total`);
+    console.log(`[conversations/get] Total unread: ${convsWithUnread.reduce((sum, c) => sum + c.unreadCount, 0)}`);
+    res.json(convsWithUnread);
   } catch (err) {
     console.error('[conversations/get]', err);
     res.status(500).json({ message: 'Server error' });
