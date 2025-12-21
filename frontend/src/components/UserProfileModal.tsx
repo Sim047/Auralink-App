@@ -195,18 +195,6 @@ export default function UserProfileModal({
                 Events {events.length ? `(${events.length})` : ""}
               </button>
               <button
-                className="px-3 py-2 rounded-xl text-sm font-semibold bg-white/10 text-gray-300 hover:bg-white/20"
-                onClick={() => {
-                  try {
-                    localStorage.setItem('auralink-user-content-id', user._id);
-                    localStorage.setItem('auralink-user-content-tab', 'events');
-                  } catch {}
-                  if (onNavigate) onNavigate('user-content');
-                }}
-              >
-                View all
-              </button>
-              <button
                 className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === "posts" ? "bg-purple-600 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}
                 onClick={() => setTab("posts")}
               >
@@ -217,12 +205,14 @@ export default function UserProfileModal({
                 onClick={() => {
                   try {
                     localStorage.setItem('auralink-user-content-id', user._id);
-                    localStorage.setItem('auralink-user-content-tab', 'posts');
+                    localStorage.setItem('auralink-user-content-tab', tab);
                   } catch {}
+                  if (onClose) onClose();
                   if (onNavigate) onNavigate('user-content');
                 }}
+                aria-label={`View all ${tab}`}
               >
-                View all
+                {tab === 'events' ? 'View all events' : 'View all posts'}
               </button>
             </div>
 
@@ -288,8 +278,9 @@ export default function UserProfileModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full text-center text-sm text-gray-400 hover:text-white transition-colors py-2"
+            className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
           >
+            <X className="w-5 h-5" />
             Close
           </button>
         </div>
